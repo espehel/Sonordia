@@ -1,0 +1,23 @@
+appId: com.musicalkey.desktop
+productName: MusicalKey
+directories:
+  buildResources: build
+  output: dist
+files:
+  - out/**/*
+extraResources:
+  - from: bridge/dist/
+    to: bridge
+    filter:
+      - "**/*"
+  - from: ../../packages/key-prediction/checkpoints/keynet.pt
+    to: checkpoints/keynet.pt
+mac:
+  category: public.app-category.music
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  target:
+    - dmg
+    - zip
