@@ -7,9 +7,11 @@ interface PlaylistViewProps {
   onAddSong: (songId: string) => void
   onRemoveSong: (songId: string) => void
   onReorder: (songIds: string[]) => void
+  onPlay?: (song: Song) => void
+  activeSongId?: string | null
 }
 
-export function PlaylistView({ playlistSongs, allSongs, onAddSong, onRemoveSong, onReorder }: PlaylistViewProps) {
+export function PlaylistView({ playlistSongs, allSongs, onAddSong, onRemoveSong, onReorder, onPlay, activeSongId }: PlaylistViewProps) {
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const dragOverIdx = useRef<number | null>(null)
 
@@ -73,9 +75,11 @@ export function PlaylistView({ playlistSongs, allSongs, onAddSong, onRemoveSong,
                 onDragStart={() => handleDragStart(idx)}
                 onDragOver={(e) => handleDragOver(e, idx)}
                 onDrop={handleDrop}
+                onClick={() => onPlay?.(song)}
                 style={{
                   opacity: dragIdx === idx ? 0.4 : 1,
-                  cursor: 'grab'
+                  cursor: onPlay ? 'pointer' : 'grab',
+                  background: activeSongId === song.id ? '#f4f8ff' : 'transparent'
                 }}
               >
                 <td style={{ ...cell, textAlign: 'center', color: '#aaa', width: 40 }}>{idx + 1}</td>
@@ -83,7 +87,7 @@ export function PlaylistView({ playlistSongs, allSongs, onAddSong, onRemoveSong,
                 <td style={cell}>{song.artist ?? '—'}</td>
                 <td style={{ ...cell, textAlign: 'center' }}>{song.key_camelot ?? '—'}</td>
                 <td style={{ ...cell, textAlign: 'center' }}>{song.bpm != null ? song.bpm.toFixed(1) : '—'}</td>
-                <td style={{ ...cell, textAlign: 'right' }}>
+                <td style={{ ...cell, textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
                   <button onClick={() => onRemoveSong(song.id)} style={removeBtn}>&times;</button>
                 </td>
               </tr>

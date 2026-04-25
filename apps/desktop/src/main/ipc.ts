@@ -16,9 +16,19 @@ import {
   reorderPlaylist
 } from './db'
 import { PythonBridge } from './python-bridge'
+import { VizBackfill } from './viz-backfill'
+import {
+  ensureVizDir,
+  writeVizFile,
+  readAllViz,
+  listMissingFeatures,
+  clearVizDir,
+  VIZ_FEATURES,
+  VizFeature
+} from './viz-cache'
 
-export function registerIpc(bridge: PythonBridge): void {
-  // ── Songs (invoke/handle) ──
+export function registerIpc(bridge: PythonBridge, backfill: VizBackfill): void {
+  // ── Songs ──
 
   ipcMain.handle('songs:list', () => listSongs())
 
@@ -26,6 +36,7 @@ export function registerIpc(bridge: PythonBridge): void {
 
   ipcMain.handle('songs:remove', (_event, id: string) => {
     removeSong(id)
+    clearVizDir(id)
   })
 
   ipcMain.handle('songs:pick-files', async () => {
@@ -50,7 +61,7 @@ export function registerIpc(bridge: PythonBridge): void {
     }
   })
 
-  // ── Playlists (invoke/handle) ──
+  // ── Playlists ──
 
   ipcMain.handle('playlists:list', () => listPlaylists())
 
@@ -78,7 +89,26 @@ export function registerIpc(bridge: PythonBridge): void {
     reorderPlaylist(playlistId, songIds)
   })
 
-  // ── Bridge status (send/on push) ──
+  // ── Visualizations ──
+
+  ipcMain.handle('viz:get', (_event, songId: string) => {
+    const data = readAllViz(songId)
+    const missing = listMissingFeatures(songId)
+    return { data, missing }
+  })
+
+  ipcMain.handle('viz:compute', async (_event, songId: string) => {
+    const song = getSong(songId)
+    if (!song) return { written: [] }
+    const missing = listMissingFeatures(songId)
+    if (missing.length === 0) return { written: [] }
+    const outDir = ensureVizDir(songId)
+    return bridge.computeViz(song.file_path, outDir, missing as VizFeature[])
+  })
+
+  ipcMain.handle('viz:progress', () => backfill.getProgress())
+
+  // ── Bridge status push ──
 
   bridge.on('status', (status) => {
     sendToAllWindows('bridge:status', status)
@@ -102,7 +132,18 @@ async function analyzeSong(id: string, bridge: PythonBridge): Promise<void> {
       bpm_confidence: result.bpm.confidence,
       analysis_status: 'done'
     })
+    // Beats are already computed during analyze — cache them so the bridge
+    // doesn't have to redo essentia for the beat-grid layer.
+    writeVizFile(id, 'beats', { bpm: result.bpm.bpm, beats: result.beats })
     sendToAllWindows('songs:updated', updated)
+
+    // Compute the remaining viz features for this song. Don't await — let it
+    // run in the background; the renderer can request them on demand if needed.
+    const remaining = VIZ_FEATURES.filter((f) => f !== 'beats')
+    const outDir = ensureVizDir(id)
+    bridge.computeViz(song.file_path, outDir, remaining as VizFeature[]).catch((err) => {
+      console.error(`[viz] compute-viz failed for ${id}:`, err)
+    })
   } catch (err) {
     const updated = updateSongAnalysis(id, {
       analysis_status: 'error',

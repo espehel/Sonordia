@@ -4,6 +4,8 @@ interface SongRowProps {
   song: Song
   onAnalyze: (id: string) => void
   onRemove: (id: string) => void
+  onPlay?: (song: Song) => void
+  isActive?: boolean
 }
 
 const statusColors: Record<Song['analysis_status'], string> = {
@@ -13,14 +15,24 @@ const statusColors: Record<Song['analysis_status'], string> = {
   error: '#c00'
 }
 
-export function SongRow({ song, onAnalyze, onRemove }: SongRowProps) {
+export function SongRow({ song, onAnalyze, onRemove, onPlay, isActive }: SongRowProps) {
+  const handleRowClick = () => {
+    if (onPlay) onPlay(song)
+  }
+
+  const stop = (e: React.MouseEvent) => e.stopPropagation()
+
   return (
-    <tr>
+    <tr
+      onClick={handleRowClick}
+      style={{
+        background: isActive ? '#f4f8ff' : 'transparent',
+        cursor: onPlay ? 'pointer' : 'default'
+      }}
+    >
       <td style={cellStyle}>{song.title ?? '—'}</td>
       <td style={cellStyle}>{song.artist ?? '—'}</td>
-      <td style={{ ...cellStyle, textAlign: 'center' }}>
-        {song.key_camelot ?? '—'}
-      </td>
+      <td style={{ ...cellStyle, textAlign: 'center' }}>{song.key_camelot ?? '—'}</td>
       <td style={{ ...cellStyle, textAlign: 'center' }}>
         {song.bpm != null ? song.bpm.toFixed(1) : '—'}
       </td>
@@ -29,7 +41,7 @@ export function SongRow({ song, onAnalyze, onRemove }: SongRowProps) {
           {song.analysis_status}
         </span>
       </td>
-      <td style={{ ...cellStyle, textAlign: 'right' }}>
+      <td style={{ ...cellStyle, textAlign: 'right' }} onClick={stop}>
         {song.analysis_status === 'pending' && (
           <button onClick={() => onAnalyze(song.id)} style={actionBtn}>
             Analyze

@@ -33,6 +33,59 @@ export interface BridgeStatus {
   code?: number
 }
 
+export interface WaveformViz {
+  peaks: [number, number][]
+  duration: number
+}
+
+export interface RmsViz {
+  rms: number[]
+  duration: number
+}
+
+export interface ChromaViz {
+  chroma: number[][]
+  frames: number
+  duration: number
+}
+
+export interface KeyTrackSegment {
+  start: number
+  end: number
+  key_id: number
+  camelot: string
+}
+
+export interface KeyTrackViz {
+  segments: KeyTrackSegment[]
+}
+
+export interface BeatsViz {
+  bpm: number
+  beats: number[]
+}
+
+export interface VizPayload {
+  waveform?: WaveformViz
+  rms?: RmsViz
+  chroma?: ChromaViz
+  keytrack?: KeyTrackViz
+  beats?: BeatsViz
+}
+
+export interface VizGetResult {
+  data: VizPayload
+  missing: string[]
+}
+
+export interface BackfillProgress {
+  state: 'idle' | 'running' | 'done'
+  total: number
+  completed: number
+  currentSongId?: string
+  error?: string
+}
+
 export interface ElectronAPI {
   songs: {
     list: () => Promise<Song[]>
@@ -52,8 +105,15 @@ export interface ElectronAPI {
     removeSong: (playlistId: string, songId: string) => Promise<void>
     reorder: (playlistId: string, songIds: string[]) => Promise<void>
   }
+  viz: {
+    get: (songId: string) => Promise<VizGetResult>
+    compute: (songId: string) => Promise<{ written: string[] }>
+    getProgress: () => Promise<BackfillProgress>
+    audioUrl: (songId: string) => string
+  }
   onSongUpdated: (cb: (song: Song) => void) => () => void
   onBridgeStatus: (cb: (status: BridgeStatus) => void) => () => void
+  onVizProgress: (cb: (progress: BackfillProgress) => void) => () => void
 }
 
 declare global {

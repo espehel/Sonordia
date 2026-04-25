@@ -8,18 +8,22 @@ import { v4 as uuid } from 'uuid'
 export interface AnalysisResult {
   key: { camelot: string; key_name: string; key_id: number }
   bpm: { bpm: number; confidence: number; beat_count: number }
+  beats: number[]
+}
+
+export interface ComputeVizResult {
+  written: string[]
 }
 
 interface BridgeResponse {
   id: string
   status: 'ok' | 'error'
-  key?: AnalysisResult['key']
-  bpm?: AnalysisResult['bpm']
   error?: string
+  [key: string]: unknown
 }
 
 type PendingRequest = {
-  resolve: (result: AnalysisResult) => void
+  resolve: (response: BridgeResponse) => void
   reject: (error: Error) => void
 }
 
@@ -27,6 +31,7 @@ const MAX_RESTARTS = 3
 const RESTART_DELAY_MS = 2000
 const READY_TIMEOUT_MS = 30_000
 const ANALYZE_TIMEOUT_MS = 120_000
+const COMPUTE_VIZ_TIMEOUT_MS = 240_000
 
 export class PythonBridge extends EventEmitter {
   private process: ChildProcess | null = null
@@ -70,16 +75,14 @@ export class PythonBridge extends EventEmitter {
     let command: string
     let args: string[]
     let cwd: string | undefined
-    let env: NodeJS.ProcessEnv = { ...process.env }
+    const env: NodeJS.ProcessEnv = { ...process.env }
 
     if (isDev) {
-      // Dev: __dirname is apps/desktop/out/main/ → repo root is 4 levels up
       const repoRoot = join(__dirname, '../../../..')
       command = 'uv'
       args = ['run', 'python', 'apps/desktop/bridge/analyzer.py']
       cwd = repoRoot
     } else {
-      // Production: use PyInstaller binary from extraResources
       const resourcePath = join(process.resourcesPath, 'bridge', 'analyzer')
 
       if (!existsSync(resourcePath)) {
@@ -89,7 +92,6 @@ export class PythonBridge extends EventEmitter {
         return
       }
 
-      // Ensure executable permission (may be stripped by CI or git)
       try {
         chmodSync(resourcePath, 0o755)
       } catch {
@@ -99,8 +101,6 @@ export class PythonBridge extends EventEmitter {
       command = resourcePath
       args = []
       cwd = undefined
-
-      // Pass MODEL_PATH pointing to the bundled checkpoint in extraResources
       env.MODEL_PATH = join(process.resourcesPath, 'checkpoints', 'keynet.pt')
     }
 
@@ -130,7 +130,6 @@ export class PythonBridge extends EventEmitter {
       this.process = null
       this.buffer = ''
 
-      // Reject all pending requests
       for (const [, req] of this.pending) {
         req.reject(new Error('Python bridge process exited'))
       }
@@ -203,8 +202,8 @@ export class PythonBridge extends EventEmitter {
     }
     this.pending.delete(msg.id)
 
-    if (msg.status === 'ok' && msg.key && msg.bpm) {
-      pending.resolve({ key: msg.key, bpm: msg.bpm })
+    if (msg.status === 'ok') {
+      pending.resolve(msg)
     } else {
       pending.reject(new Error(msg.error ?? 'Unknown bridge error'))
     }
@@ -219,24 +218,28 @@ export class PythonBridge extends EventEmitter {
     ])
   }
 
-  async analyze(filePath: string, timeoutMs = ANALYZE_TIMEOUT_MS): Promise<AnalysisResult> {
+  private send<T>(payload: object, timeoutMs: number, map: (msg: BridgeResponse) => T): Promise<T> {
     if (!this.process || !this.ready) {
-      throw new Error('Python bridge is not ready')
+      return Promise.reject(new Error('Python bridge is not ready'))
     }
 
     const id = uuid()
-    const request = JSON.stringify({ id, command: 'analyze', path: filePath }) + '\n'
+    const request = JSON.stringify({ id, ...payload }) + '\n'
 
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pending.delete(id)
-        reject(new Error(`Analysis timed out after ${timeoutMs}ms`))
+        reject(new Error(`Bridge request timed out after ${timeoutMs}ms`))
       }, timeoutMs)
 
       this.pending.set(id, {
-        resolve: (result) => {
+        resolve: (msg) => {
           clearTimeout(timer)
-          resolve(result)
+          try {
+            resolve(map(msg))
+          } catch (err) {
+            reject(err instanceof Error ? err : new Error(String(err)))
+          }
         },
         reject: (err) => {
           clearTimeout(timer)
@@ -252,6 +255,31 @@ export class PythonBridge extends EventEmitter {
         }
       })
     })
+  }
+
+  async analyze(filePath: string, timeoutMs = ANALYZE_TIMEOUT_MS): Promise<AnalysisResult> {
+    return this.send(
+      { command: 'analyze', path: filePath },
+      timeoutMs,
+      (msg) => ({
+        key: msg.key as AnalysisResult['key'],
+        bpm: msg.bpm as AnalysisResult['bpm'],
+        beats: (msg.beats as number[]) ?? []
+      })
+    )
+  }
+
+  async computeViz(
+    filePath: string,
+    outDir: string,
+    features: string[],
+    timeoutMs = COMPUTE_VIZ_TIMEOUT_MS
+  ): Promise<ComputeVizResult> {
+    return this.send(
+      { command: 'compute-viz', path: filePath, out_dir: outDir, features },
+      timeoutMs,
+      (msg) => ({ written: (msg.written as string[]) ?? [] })
+    )
   }
 
   isReady(): boolean {

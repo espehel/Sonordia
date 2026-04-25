@@ -5,9 +5,11 @@ interface SongTableProps {
   songs: Song[]
   onAnalyze: (id: string) => void
   onRemove: (id: string) => void
+  onPlay?: (song: Song) => void
+  activeSongId?: string | null
 }
 
-export function SongTable({ songs, onAnalyze, onRemove }: SongTableProps) {
+export function SongTable({ songs, onAnalyze, onRemove, onPlay, activeSongId }: SongTableProps) {
   if (songs.length === 0) {
     return (
       <div style={{ textAlign: 'center', color: '#888', padding: '60px 0' }}>
@@ -47,6 +49,8 @@ export function SongTable({ songs, onAnalyze, onRemove }: SongTableProps) {
               song={song}
               onAnalyze={onAnalyze}
               onRemove={onRemove}
+              onPlay={onPlay}
+              isActive={activeSongId === song.id}
             />
           ))}
         </tbody>

@@ -1,1 +1,15 @@
-export type { Song, Playlist, PlaylistSong, BridgeStatus } from '../preload/api'
+export type {
+  Song,
+  Playlist,
+  PlaylistSong,
+  BridgeStatus,
+  WaveformViz,
+  RmsViz,
+  ChromaViz,
+  KeyTrackViz,
+  KeyTrackSegment,
+  BeatsViz,
+  VizPayload,
+  VizGetResult,
+  BackfillProgress
+} from '../preload/api'
