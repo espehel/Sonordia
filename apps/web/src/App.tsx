@@ -57,7 +57,7 @@ export default function App() {
 
   return (
     <div style={{ fontFamily: "sans-serif", maxWidth: 520, margin: "80px auto", padding: "0 16px" }}>
-      <h1 style={{ fontSize: 24, marginBottom: 8 }}>MusicalKeyCNN</h1>
+      <h1 style={{ fontSize: 24, marginBottom: 8 }}>Sonordia</h1>
       <p style={{ color: "#666", marginBottom: 32 }}>Predict the key and BPM of an audio file.</p>
 
       <input

@@ -4,7 +4,7 @@ export type VizLayer = 'waveform' | 'ruler' | 'beats' | 'rms' | 'chroma' | 'keyt
 
 export type VizSettings = Record<VizLayer, boolean>
 
-const STORAGE_KEY = 'musicalkey:viz-settings'
+const STORAGE_KEY = 'sonordia:viz-settings'
 
 const defaults: VizSettings = {
   waveform: true,

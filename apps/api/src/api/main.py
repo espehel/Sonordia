@@ -13,7 +13,7 @@ from bpm_analysis import analyze_bpm
 MODEL_PATH = Path(os.getenv("MODEL_PATH", "checkpoints/keynet.pt"))
 DEVICE = torch.device(os.getenv("DEVICE", "cuda" if torch.cuda.is_available() else "cpu"))
 
-app = FastAPI(title="MusicalKeyCNN", description="Predict the musical key and BPM of an audio file.")
+app = FastAPI(title="Sonordia", description="Predict the musical key and BPM of an audio file.")
 
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 

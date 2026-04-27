@@ -1,4 +1,4 @@
-# MusicalKeyCNN
+# Sonordia
 
 Monorepo for audio analysis tools built around a CNN-based musical key classifier.
 
@@ -86,8 +86,8 @@ curl -X POST http://localhost:8000/analyze/bpm -F "file=@track.mp3"
 Build and run the API from the repo root:
 
 ```sh
-docker build -f apps/api/Dockerfile -t musical-key-api .
-docker run -p 8000:8000 musical-key-api
+docker build -f apps/api/Dockerfile -t sonordia-api .
+docker run -p 8000:8000 sonordia-api
 ```
 
 ---

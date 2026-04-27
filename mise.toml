@@ -23,11 +23,11 @@ run = ["uv sync", "npm install --prefix apps/web", "npm install --prefix apps/de
 
 [tasks."docker:build"]
 description = "Build API docker image from repo root"
-run = "docker build -f apps/api/Dockerfile -t musicalkey-api ."
+run = "docker build -f apps/api/Dockerfile -t sonordia-api ."
 
 [tasks."docker:run"]
 description = "Run API container"
-run = "docker run --rm -p 8000:8000 musicalkey-api"
+run = "docker run --rm -p 8000:8000 sonordia-api"
 
 [tasks.desktop]
 description = "Run Electron desktop app in dev mode"

@@ -1,9 +1,9 @@
 {
-  "name": "musical-key-desktop",
+  "name": "@sonordia/desktop",
   "version": "0.1.0",
   "private": true,
   "description": "Desktop app for musical key and BPM analysis",
-  "author": "MusicalKey",
+  "author": "Sonordia",
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",

@@ -1,8 +1,8 @@
-# MusicalKey Desktop Development Guide
+# Sonordia Desktop Development Guide
 
 ## Project Overview
 
-Electron desktop app for musical key and BPM analysis. Part of the MusicalKeyCNN monorepo. Users import audio files into a local SQLite library, analyze them for key (Camelot wheel) and BPM via a Python child process, and organize results into playlists.
+Electron desktop app for musical key and BPM analysis. Part of the Sonordia monorepo. Users import audio files into a local SQLite library, analyze them for key (Camelot wheel) and BPM via a Python child process, and organize results into playlists.
 
 The app spawns a long-running Python process (`bridge/analyzer.py`) that communicates via JSON-lines over stdin/stdout, calling the same `key_prediction` and `bpm_analysis` packages used by the FastAPI API.
 

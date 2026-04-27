@@ -1,5 +1,5 @@
-appId: com.musicalkey.desktop
-productName: MusicalKey
+appId: com.sonordia.desktop
+productName: Sonordia
 directories:
   buildResources: build
   output: dist
