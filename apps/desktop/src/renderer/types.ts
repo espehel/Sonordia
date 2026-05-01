@@ -11,5 +11,5 @@ export type {
   BeatsViz,
   VizPayload,
   VizGetResult,
-  BackfillProgress
-} from '../preload/api'
+  BackfillProgress,
+} from "../preload/api";

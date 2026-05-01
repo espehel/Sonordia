@@ -1,15 +1,11 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
-    "module": "ESNext",
-    "moduleResolution": "bundler",
+    "noEmit": true,
+    "tsBuildInfoFile": "./tsconfig.node.tsbuildinfo",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "outDir": "./out",
-    "rootDir": "./src",
-    "strict": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
     "types": ["electron-vite/node"]
   },
   "include": ["src/main/**/*", "src/preload/**/*", "electron.vite.config.ts"]

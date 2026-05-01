@@ -1,171 +1,179 @@
-import { useState } from 'react'
-import type { Playlist } from '../types'
+import { useState } from "react";
+import { MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@sonordia/ui/alert-dialog";
+import { Button } from "@sonordia/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@sonordia/ui/dropdown-menu";
+import { Input } from "@sonordia/ui/input";
+import { cn } from "@sonordia/ui/utils";
+import type { Playlist } from "../types";
 
 interface SidebarProps {
-  playlists: Playlist[]
-  selectedId: string | null
-  onSelect: (id: string | null) => void
-  onCreate: (name: string) => void
-  onRename: (id: string, name: string) => void
-  onDelete: (id: string) => void
+  playlists: Playlist[];
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
+  onCreate: (name: string) => void;
+  onRename: (id: string, name: string) => void;
+  onDelete: (id: string) => void;
 }
 
-export function Sidebar({ playlists, selectedId, onSelect, onCreate, onRename, onDelete }: SidebarProps) {
-  const [newName, setNewName] = useState('')
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [editName, setEditName] = useState('')
+export function Sidebar({
+  playlists,
+  selectedId,
+  onSelect,
+  onCreate,
+  onRename,
+  onDelete,
+}: SidebarProps) {
+  const [newName, setNewName] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<Playlist | null>(null);
 
   const handleCreate = () => {
-    const name = newName.trim()
-    if (!name) return
-    onCreate(name)
-    setNewName('')
-  }
+    const name = newName.trim();
+    if (!name) return;
+    onCreate(name);
+    setNewName("");
+  };
 
   const startRename = (playlist: Playlist) => {
-    setEditingId(playlist.id)
-    setEditName(playlist.name)
-  }
+    setEditingId(playlist.id);
+    setEditName(playlist.name);
+  };
 
   const commitRename = () => {
     if (editingId && editName.trim()) {
-      onRename(editingId, editName.trim())
+      onRename(editingId, editName.trim());
     }
-    setEditingId(null)
-  }
+    setEditingId(null);
+  };
 
   return (
-    <div style={{
-      width: 220,
-      borderRight: '1px solid #eee',
-      padding: 16,
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 4,
-      flexShrink: 0
-    }}>
-      <div
+    <div className="border-border flex w-56 shrink-0 flex-col gap-1 border-r p-4">
+      <button
+        type="button"
         onClick={() => onSelect(null)}
-        style={{
-          padding: '8px 12px',
-          borderRadius: 6,
-          cursor: 'pointer',
-          fontWeight: 600,
-          fontSize: 14,
-          background: selectedId === null ? '#f0f0f0' : 'transparent'
-        }}
+        className={cn(
+          "rounded-md px-3 py-2 text-left text-sm font-semibold",
+          selectedId === null ? "bg-muted" : "hover:bg-muted/50"
+        )}
       >
         All Songs
-      </div>
+      </button>
 
-      <div style={{
-        fontSize: 11,
-        color: '#888',
-        textTransform: 'uppercase',
-        letterSpacing: 1,
-        padding: '12px 12px 4px',
-        fontWeight: 600
-      }}>
+      <div className="text-muted-foreground px-3 pt-3 pb-1 text-[11px] font-semibold tracking-wider uppercase">
         Playlists
       </div>
 
       {playlists.map((pl) => (
         <div
           key={pl.id}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            padding: '6px 12px',
-            borderRadius: 6,
-            cursor: 'pointer',
-            background: selectedId === pl.id ? '#f0f0f0' : 'transparent',
-            fontSize: 14
-          }}
           onClick={() => onSelect(pl.id)}
+          className={cn(
+            "group flex cursor-pointer items-center gap-1 rounded-md px-3 py-1.5 text-sm",
+            selectedId === pl.id ? "bg-muted" : "hover:bg-muted/50"
+          )}
         >
           {editingId === pl.id ? (
-            <input
+            <Input
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
               onBlur={commitRename}
-              onKeyDown={(e) => e.key === 'Enter' && commitRename()}
+              onKeyDown={(e) => e.key === "Enter" && commitRename()}
               autoFocus
               onClick={(e) => e.stopPropagation()}
-              style={{
-                flex: 1,
-                padding: '2px 4px',
-                fontSize: 14,
-                border: '1px solid #ccc',
-                borderRadius: 4,
-                outline: 'none'
-              }}
+              className="h-6 px-1 text-sm"
             />
           ) : (
             <>
-              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {pl.name}
-              </span>
-              <button
-                onClick={(e) => { e.stopPropagation(); startRename(pl) }}
-                style={iconBtn}
-                title="Rename"
-              >
-                &#9998;
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); onDelete(pl.id) }}
-                style={{ ...iconBtn, color: '#c00' }}
-                title="Delete"
-              >
-                &times;
-              </button>
+              <span className="flex-1 truncate">{pl.name}</span>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={(e) => e.stopPropagation()}
+                    aria-label="Playlist actions"
+                    className="opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100"
+                  >
+                    <MoreHorizontal />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenuItem onSelect={() => startRename(pl)}>
+                    <Pencil />
+                    Rename
+                  </DropdownMenuItem>
+                  <DropdownMenuItem variant="destructive" onSelect={() => setDeleteTarget(pl)}>
+                    <Trash2 />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           )}
         </div>
       ))}
 
-      <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
-        <input
+      <div className="mt-2 flex gap-1">
+        <Input
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+          onKeyDown={(e) => e.key === "Enter" && handleCreate()}
           placeholder="New playlist..."
-          style={{
-            flex: 1,
-            padding: '6px 8px',
-            fontSize: 13,
-            border: '1px solid #ddd',
-            borderRadius: 4,
-            outline: 'none'
-          }}
+          className="h-8 text-xs"
         />
-        <button
+        <Button
+          size="icon-sm"
           onClick={handleCreate}
           disabled={!newName.trim()}
-          style={{
-            padding: '6px 10px',
-            fontSize: 13,
-            borderRadius: 4,
-            border: 'none',
-            background: newName.trim() ? '#1a1a1a' : '#ccc',
-            color: '#fff',
-            cursor: newName.trim() ? 'pointer' : 'default'
-          }}
+          aria-label="Create playlist"
         >
-          +
-        </button>
+          <Plus />
+        </Button>
       </div>
-    </div>
-  )
-}
 
-const iconBtn: React.CSSProperties = {
-  background: 'none',
-  border: 'none',
-  cursor: 'pointer',
-  fontSize: 14,
-  padding: '0 2px',
-  color: '#888',
-  lineHeight: 1
+      <AlertDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete playlist?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete{" "}
+              <span className="font-semibold">{deleteTarget?.name}</span>. The songs themselves will
+              not be removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteTarget) onDelete(deleteTarget.id);
+                setDeleteTarget(null);
+              }}
+              className="bg-destructive hover:bg-destructive/90 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
 }

@@ -1,4 +1,9 @@
 import { useState, useRef } from "react";
+import { Button } from "@sonordia/ui/button";
+import { Card, CardContent } from "@sonordia/ui/card";
+import { Toaster, toast } from "@sonordia/ui/sonner";
+import { ThemeToggle } from "@sonordia/ui/theme-toggle";
+import { cn } from "@sonordia/ui/utils";
 
 interface KeyResult {
   file: string;
@@ -13,7 +18,7 @@ interface BpmResult {
   [key: string]: unknown;
 }
 
-type Status = "idle" | "loading" | "done" | "error";
+type Status = "idle" | "loading" | "done";
 
 export default function App() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -21,12 +26,10 @@ export default function App() {
   const [status, setStatus] = useState<Status>("idle");
   const [keyResult, setKeyResult] = useState<KeyResult | null>(null);
   const [bpmResult, setBpmResult] = useState<BpmResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   async function analyze() {
     if (!file) return;
     setStatus("loading");
-    setError(null);
     setKeyResult(null);
     setBpmResult(null);
 
@@ -42,98 +45,78 @@ export default function App() {
       ]);
 
       const [key, bpm] = await Promise.all([
-        keyRes.ok ? keyRes.json() : keyRes.json().then((e: { detail: string }) => Promise.reject(e.detail)),
-        bpmRes.ok ? bpmRes.json() : bpmRes.json().then((e: { detail: string }) => Promise.reject(e.detail)),
+        keyRes.ok
+          ? keyRes.json()
+          : keyRes.json().then((e: { detail: string }) => Promise.reject(e.detail)),
+        bpmRes.ok
+          ? bpmRes.json()
+          : bpmRes.json().then((e: { detail: string }) => Promise.reject(e.detail)),
       ]);
 
       setKeyResult(key);
       setBpmResult(bpm);
       setStatus("done");
     } catch (e) {
-      setError(String(e));
-      setStatus("error");
+      toast.error("Analysis failed", { description: String(e) });
+      setStatus("idle");
     }
   }
 
   return (
-    <div style={{ fontFamily: "sans-serif", maxWidth: 520, margin: "80px auto", padding: "0 16px" }}>
-      <h1 style={{ fontSize: 24, marginBottom: 8 }}>Sonordia</h1>
-      <p style={{ color: "#666", marginBottom: 32 }}>Predict the key and BPM of an audio file.</p>
+    <div className="mx-auto mt-20 max-w-[520px] px-4 font-sans">
+      <div className="mb-2 flex items-start justify-between">
+        <h1 className="text-2xl font-semibold">Sonordia</h1>
+        <ThemeToggle />
+      </div>
+      <p className="text-muted-foreground mb-8">Predict the key and BPM of an audio file.</p>
 
       <input
         ref={inputRef}
         type="file"
         accept=".mp3,.wav,.flac,.aiff,.ogg"
-        style={{ display: "none" }}
+        className="hidden"
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
       />
 
       <div
         onClick={() => inputRef.current?.click()}
-        style={{
-          border: "2px dashed #ccc",
-          borderRadius: 8,
-          padding: "40px 24px",
-          textAlign: "center",
-          cursor: "pointer",
-          marginBottom: 16,
-          background: file ? "#f0fff4" : "#fafafa",
-        }}
+        className={cn(
+          "mb-4 cursor-pointer rounded-lg border-2 border-dashed px-6 py-10 text-center transition-colors",
+          file ? "border-emerald-300 bg-emerald-50" : "border-border bg-muted/30 hover:bg-muted/50"
+        )}
       >
         {file ? file.name : "Click to select an audio file"}
       </div>
 
-      <button
+      <Button
         onClick={analyze}
         disabled={!file || status === "loading"}
-        style={{
-          width: "100%",
-          padding: "12px 0",
-          fontSize: 16,
-          borderRadius: 6,
-          border: "none",
-          background: "#1a1a1a",
-          color: "#fff",
-          cursor: file && status !== "loading" ? "pointer" : "not-allowed",
-          opacity: file && status !== "loading" ? 1 : 0.5,
-        }}
+        size="lg"
+        className="w-full"
       >
         {status === "loading" ? "Analyzing..." : "Analyze"}
-      </button>
+      </Button>
 
       {status === "done" && keyResult && bpmResult && (
-        <div
-          style={{
-            marginTop: 32,
-            padding: 24,
-            borderRadius: 8,
-            background: "#f8f8f8",
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: 16,
-            textAlign: "center",
-          }}
-        >
-          <div>
-            <div style={{ fontSize: 12, color: "#888", textTransform: "uppercase", letterSpacing: 1 }}>Key</div>
-            <div style={{ fontSize: 28, fontWeight: 700, marginTop: 4 }}>{keyResult.key}</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: "#888", textTransform: "uppercase", letterSpacing: 1 }}>Camelot</div>
-            <div style={{ fontSize: 28, fontWeight: 700, marginTop: 4 }}>{keyResult.camelot}</div>
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: "#888", textTransform: "uppercase", letterSpacing: 1 }}>BPM</div>
-            <div style={{ fontSize: 28, fontWeight: 700, marginTop: 4 }}>{bpmResult.bpm}</div>
-          </div>
-        </div>
+        <Card className="mt-8">
+          <CardContent className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <div className="text-muted-foreground text-xs tracking-wider uppercase">Key</div>
+              <div className="mt-1 text-3xl font-bold">{keyResult.key}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-xs tracking-wider uppercase">Camelot</div>
+              <div className="mt-1 text-3xl font-bold">{keyResult.camelot}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-xs tracking-wider uppercase">BPM</div>
+              <div className="mt-1 text-3xl font-bold">{bpmResult.bpm}</div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
-      {status === "error" && (
-        <div style={{ marginTop: 24, color: "#c00", padding: 16, background: "#fff0f0", borderRadius: 6 }}>
-          {error}
-        </div>
-      )}
+      <Toaster richColors position="bottom-right" />
     </div>
   );
 }

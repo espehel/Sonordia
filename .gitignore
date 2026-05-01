@@ -190,8 +190,13 @@ cython_debug/
 .cursorindexingignore
 
 node_modules
+apps/*/node_modules
+packages/*/node_modules
 
 # Electron
 out/
 apps/desktop/dist/
 apps/desktop/bridge/dist/
+
+# Playwright
+.playwright-mcp

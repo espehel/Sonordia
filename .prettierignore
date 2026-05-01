@@ -1,0 +1,11 @@
+**/dist
+**/out
+**/build
+**/node_modules
+**/*.tsbuildinfo
+apps/desktop/bridge
+.venv
+*.md
+*.lock
+package-lock.json
+uv.lock

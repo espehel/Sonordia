@@ -1,144 +1,138 @@
-import { useState, useRef } from 'react'
-import type { PlaylistSong, Song } from '../types'
+import { useState, useRef } from "react";
+import { X } from "lucide-react";
+import { Button } from "@sonordia/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@sonordia/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@sonordia/ui/table";
+import { cn } from "@sonordia/ui/utils";
+import type { PlaylistSong, Song } from "../types";
 
 interface PlaylistViewProps {
-  playlistSongs: PlaylistSong[]
-  allSongs: Song[]
-  onAddSong: (songId: string) => void
-  onRemoveSong: (songId: string) => void
-  onReorder: (songIds: string[]) => void
-  onPlay?: (song: Song) => void
-  activeSongId?: string | null
+  playlistSongs: PlaylistSong[];
+  allSongs: Song[];
+  onAddSong: (songId: string) => void;
+  onRemoveSong: (songId: string) => void;
+  onReorder: (songIds: string[]) => void;
+  onPlay?: (song: Song) => void;
+  activeSongId?: string | null;
 }
 
-export function PlaylistView({ playlistSongs, allSongs, onAddSong, onRemoveSong, onReorder, onPlay, activeSongId }: PlaylistViewProps) {
-  const [dragIdx, setDragIdx] = useState<number | null>(null)
-  const dragOverIdx = useRef<number | null>(null)
+const truncate = "max-w-60 truncate";
+
+export function PlaylistView({
+  playlistSongs,
+  allSongs,
+  onAddSong,
+  onRemoveSong,
+  onReorder,
+  onPlay,
+  activeSongId,
+}: PlaylistViewProps) {
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const dragOverIdx = useRef<number | null>(null);
 
   const handleDragStart = (idx: number) => {
-    setDragIdx(idx)
-  }
+    setDragIdx(idx);
+  };
 
   const handleDragOver = (e: React.DragEvent, idx: number) => {
-    e.preventDefault()
-    dragOverIdx.current = idx
-  }
+    e.preventDefault();
+    dragOverIdx.current = idx;
+  };
 
   const handleDrop = () => {
     if (dragIdx === null || dragOverIdx.current === null || dragIdx === dragOverIdx.current) {
-      setDragIdx(null)
-      return
+      setDragIdx(null);
+      return;
     }
-    const ids = playlistSongs.map((s) => s.id)
-    const [moved] = ids.splice(dragIdx, 1)
-    ids.splice(dragOverIdx.current, 0, moved)
-    onReorder(ids)
-    setDragIdx(null)
-    dragOverIdx.current = null
-  }
+    const ids = playlistSongs.map((s) => s.id);
+    const [moved] = ids.splice(dragIdx, 1);
+    ids.splice(dragOverIdx.current, 0, moved);
+    onReorder(ids);
+    setDragIdx(null);
+    dragOverIdx.current = null;
+  };
 
-  // Songs not already in the playlist
-  const playlistSongIds = new Set(playlistSongs.map((s) => s.id))
-  const addable = allSongs.filter((s) => !playlistSongIds.has(s.id))
+  const playlistSongIds = new Set(playlistSongs.map((s) => s.id));
+  const addable = allSongs.filter((s) => !playlistSongIds.has(s.id));
 
   return (
     <div>
       {playlistSongs.length === 0 ? (
-        <div style={{ textAlign: 'center', color: '#888', padding: '40px 0' }}>
+        <div className="text-muted-foreground py-10 text-center">
           No songs in this playlist. Add songs from the dropdown below.
         </div>
       ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-          <thead>
-            <tr>
-              {['#', 'Title', 'Artist', 'Key', 'BPM', ''].map((h) => (
-                <th key={h} style={{
-                  padding: '8px 12px',
-                  textAlign: h === 'Key' || h === 'BPM' || h === '#' ? 'center' : 'left',
-                  borderBottom: '2px solid #eee',
-                  fontSize: 12,
-                  color: '#888',
-                  textTransform: 'uppercase',
-                  letterSpacing: 1,
-                  fontWeight: 600
-                }}>
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-10 text-center">#</TableHead>
+              <TableHead>Title</TableHead>
+              <TableHead>Artist</TableHead>
+              <TableHead className="text-center">Key</TableHead>
+              <TableHead className="text-center">BPM</TableHead>
+              <TableHead />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {playlistSongs.map((song, idx) => (
-              <tr
+              <TableRow
                 key={song.id}
                 draggable
                 onDragStart={() => handleDragStart(idx)}
                 onDragOver={(e) => handleDragOver(e, idx)}
                 onDrop={handleDrop}
                 onClick={() => onPlay?.(song)}
-                style={{
-                  opacity: dragIdx === idx ? 0.4 : 1,
-                  cursor: onPlay ? 'pointer' : 'grab',
-                  background: activeSongId === song.id ? '#f4f8ff' : 'transparent'
-                }}
+                className={cn(
+                  onPlay ? "cursor-pointer" : "cursor-grab",
+                  dragIdx === idx && "opacity-40",
+                  activeSongId === song.id && "bg-accent/40"
+                )}
               >
-                <td style={{ ...cell, textAlign: 'center', color: '#aaa', width: 40 }}>{idx + 1}</td>
-                <td style={cell}>{song.title ?? '—'}</td>
-                <td style={cell}>{song.artist ?? '—'}</td>
-                <td style={{ ...cell, textAlign: 'center' }}>{song.key_camelot ?? '—'}</td>
-                <td style={{ ...cell, textAlign: 'center' }}>{song.bpm != null ? song.bpm.toFixed(1) : '—'}</td>
-                <td style={{ ...cell, textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
-                  <button onClick={() => onRemoveSong(song.id)} style={removeBtn}>&times;</button>
-                </td>
-              </tr>
+                <TableCell className="text-muted-foreground w-10 text-center">{idx + 1}</TableCell>
+                <TableCell className={truncate}>{song.title ?? "—"}</TableCell>
+                <TableCell className={truncate}>{song.artist ?? "—"}</TableCell>
+                <TableCell className="text-center">{song.key_camelot ?? "—"}</TableCell>
+                <TableCell className="text-center">
+                  {song.bpm != null ? song.bpm.toFixed(1) : "—"}
+                </TableCell>
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => onRemoveSong(song.id)}
+                    aria-label="Remove from playlist"
+                  >
+                    <X />
+                  </Button>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       )}
 
       {addable.length > 0 && (
-        <div style={{ marginTop: 16 }}>
-          <select
-            defaultValue=""
-            onChange={(e) => {
-              if (e.target.value) {
-                onAddSong(e.target.value)
-                e.target.value = ''
-              }
-            }}
-            style={{
-              padding: '6px 8px',
-              fontSize: 13,
-              border: '1px solid #ddd',
-              borderRadius: 4,
-              minWidth: 200
+        <div className="mt-4">
+          <Select
+            value=""
+            onValueChange={(value) => {
+              if (value) onAddSong(value);
             }}
           >
-            <option value="" disabled>Add a song...</option>
-            {addable.map((s) => (
-              <option key={s.id} value={s.id}>{s.title ?? s.file_path}</option>
-            ))}
-          </select>
+            <SelectTrigger className="min-w-[200px]">
+              <SelectValue placeholder="Add a song..." />
+            </SelectTrigger>
+            <SelectContent>
+              {addable.map((s) => (
+                <SelectItem key={s.id} value={s.id}>
+                  {s.title ?? s.file_path}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       )}
     </div>
-  )
-}
-
-const cell: React.CSSProperties = {
-  padding: '8px 12px',
-  borderBottom: '1px solid #eee',
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  maxWidth: 240
-}
-
-const removeBtn: React.CSSProperties = {
-  background: 'none',
-  border: 'none',
-  cursor: 'pointer',
-  fontSize: 16,
-  color: '#c00',
-  padding: '2px 6px'
+  );
 }

@@ -10,6 +10,11 @@
       "source": "chrisvoncsefalvay/claude-skills",
       "sourceType": "github",
       "computedHash": "3e9d436fa84d0b1d990f42a99290ac76009007524fb9e19fed113781db16a8e0"
+    },
+    "shadcn": {
+      "source": "shadcn/ui",
+      "sourceType": "github",
+      "computedHash": "2bc6cf38ec7b4a5778a43fabb3e87642c9897ad45e9eb42438b57fd2def6cca8"
     }
   }
 }

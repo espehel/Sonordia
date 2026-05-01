@@ -1,22 +1,13 @@
+import { Button } from "@sonordia/ui/button";
+
 interface ImportButtonProps {
-  onImport: () => void
+  onImport: () => void;
 }
 
 export function ImportButton({ onImport }: ImportButtonProps) {
   return (
-    <button
-      onClick={onImport}
-      style={{
-        padding: '8px 20px',
-        fontSize: 14,
-        borderRadius: 6,
-        border: 'none',
-        background: '#1a1a1a',
-        color: '#fff',
-        cursor: 'pointer'
-      }}
-    >
+    <Button onClick={onImport} size="sm">
       Import Files
-    </button>
-  )
+    </Button>
+  );
 }

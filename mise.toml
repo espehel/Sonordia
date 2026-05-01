@@ -19,7 +19,7 @@ dir = "apps/web"
 
 [tasks.install]
 description = "Install all dependencies"
-run = ["uv sync", "npm install --prefix apps/web", "npm install --prefix apps/desktop"]
+run = ["uv sync", "npm install"]
 
 [tasks."docker:build"]
 description = "Build API docker image from repo root"
@@ -32,9 +32,4 @@ run = "docker run --rm -p 8000:8000 sonordia-api"
 [tasks.desktop]
 description = "Run Electron desktop app in dev mode"
 run = "npm run dev"
-dir = "apps/desktop"
-
-[tasks."desktop:install"]
-description = "Install desktop app dependencies"
-run = "npm install"
 dir = "apps/desktop"

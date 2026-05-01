@@ -9,13 +9,18 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
-    "package": "electron-builder"
+    "package": "electron-builder",
+    "postinstall": "electron-rebuild",
+    "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@sonordia/ui": "*",
     "better-sqlite3": "^11.7.0",
+    "lucide-react": "^0.469.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
     "@types/better-sqlite3": "^7.6.12",
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.1",
@@ -26,6 +31,7 @@
     "electron-vite": "^2.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "tailwindcss": "^4.0.0",
     "typescript": "^5.5.3",
     "vite": "^5.4.2"
   }

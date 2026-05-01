@@ -266,11 +266,17 @@ For local testing without a certificate, pass `--config.mac.identity=null` to el
 
 ## UI Conventions
 
-- **Inline styles** — no CSS framework, consistent with `apps/web`
-- **React 18** with TypeScript
-- **system-ui font stack**
-- Dark buttons (`#1a1a1a`), light backgrounds, `#eee` borders
-- Status colors: pending `#888`, analyzing `#e6a200`, done `#2d8a4e`, error `#c00`
+- **Tailwind v4 + shadcn/ui** primitives from `@sonordia/ui` — see `packages/react-ui/CLAUDE.md` for the source-export model and per-component subpath imports (`@sonordia/ui/button`, `@sonordia/ui/table`, etc.).
+- Global styles imported once in `src/renderer/main.tsx` via `@sonordia/ui/styles.css`. Design tokens (CSS variables for `--background`, `--foreground`, `--primary`, …) live in that file; both light and dark are defined.
+- **React 18** with TypeScript.
+- Icons from **`lucide-react`** (direct dep of this app).
+- Status color mapping (used in `SongRow`, `AnalysisStatus`):
+  - `pending` → `text-muted-foreground`
+  - `analyzing` → `text-amber-600` / dot `bg-amber-500`
+  - `done` → `text-emerald-600` / dot `bg-emerald-600`
+  - `error` → `text-destructive` / dot `bg-destructive`
+- Active row highlight: `bg-accent/40`.
+- Renderer never reaches into Electron globals or imports app-specific things from the shared package — see the "what does NOT belong here" list in `packages/react-ui/CLAUDE.md`.
 
 ## Key Files
 

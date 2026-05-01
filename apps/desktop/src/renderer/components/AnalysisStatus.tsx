@@ -1,45 +1,39 @@
-import type { BridgeStatus } from '../types'
+import { Badge } from "@sonordia/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@sonordia/ui/tooltip";
+import { cn } from "@sonordia/ui/utils";
+import type { BridgeStatus } from "../types";
 
 interface AnalysisStatusProps {
-  status: BridgeStatus
+  status: BridgeStatus;
 }
 
-const statusConfig: Record<string, { color: string; label: string }> = {
-  starting: { color: '#e6a200', label: 'Bridge starting...' },
-  restarting: { color: '#e6a200', label: 'Bridge restarting...' },
-  ready: { color: '#2d8a4e', label: 'Bridge ready' },
-  exited: { color: '#c00', label: 'Bridge exited' },
-  error: { color: '#c00', label: 'Bridge error' }
-}
+const statusConfig: Record<string, { dotClass: string; label: string }> = {
+  starting: { dotClass: "bg-amber-500", label: "Bridge starting..." },
+  restarting: { dotClass: "bg-amber-500", label: "Bridge restarting..." },
+  ready: { dotClass: "bg-emerald-600", label: "Bridge ready" },
+  exited: { dotClass: "bg-destructive", label: "Bridge exited" },
+  error: { dotClass: "bg-destructive", label: "Bridge error" },
+};
 
 export function AnalysisStatus({ status }: AnalysisStatusProps) {
-  const config = statusConfig[status.status] ?? { color: '#888', label: status.status }
+  const config = statusConfig[status.status] ?? {
+    dotClass: "bg-muted-foreground",
+    label: status.status,
+  };
+
+  const badge = (
+    <Badge variant="outline" className="gap-1.5 font-normal">
+      <span className={cn("inline-block size-2 rounded-full", config.dotClass)} />
+      <span>{config.label}</span>
+    </Badge>
+  );
+
+  if (!status.error) return badge;
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
-        fontSize: 12,
-        color: config.color
-      }}
-    >
-      <span
-        style={{
-          width: 8,
-          height: 8,
-          borderRadius: '50%',
-          background: config.color,
-          display: 'inline-block'
-        }}
-      />
-      {config.label}
-      {status.error && (
-        <span style={{ color: '#888' }} title={status.error}>
-          — {status.error}
-        </span>
-      )}
-    </div>
-  )
+    <Tooltip>
+      <TooltipTrigger asChild>{badge}</TooltipTrigger>
+      <TooltipContent className="max-w-xs">{status.error}</TooltipContent>
+    </Tooltip>
+  );
 }

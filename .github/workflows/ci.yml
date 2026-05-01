@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  node:
+    name: Node — lint, typecheck, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Skip the apps/desktop postinstall (electron-rebuild) — it spawns Electron's
+      # binary patcher and isn't useful in CI where we don't run the desktop app.
+      # The web app and the shared package don't need it.
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build (web)
+        run: npm run build --workspace=@sonordia/web
+
+      - name: Build (desktop renderer)
+        run: npm run build --workspace=@sonordia/desktop
