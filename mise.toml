@@ -33,3 +33,8 @@ run = "docker run --rm -p 8000:8000 sonordia-api"
 description = "Run Electron desktop app in dev mode"
 run = "npm run dev"
 dir = "apps/desktop"
+
+[tasks.docs]
+description = "Run React UI docs with storybook"
+run = "npm run storybook"
+dir = "packages/react-ui"

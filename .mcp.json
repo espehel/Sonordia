@@ -2,11 +2,22 @@
   "mcpServers": {
     "playwright": {
       "command": "npx",
-      "args": ["@playwright/mcp@latest", "--cdp-endpoint", "http://localhost:9222"]
+      "args": [
+        "@playwright/mcp@latest",
+        "--cdp-endpoint",
+        "http://localhost:9222"
+      ]
     },
     "shadcn": {
       "command": "npx",
-      "args": ["shadcn@latest", "mcp"]
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
+    },
+    "react-ui-docs": {
+      "url": "http://localhost:6006/mcp",
+      "type": "http"
     }
   }
 }

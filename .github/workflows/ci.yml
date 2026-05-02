@@ -38,3 +38,12 @@ jobs:
 
       - name: Build (desktop renderer)
         run: npm run build --workspace=@sonordia/desktop
+
+      # Story tests run in a real browser via @vitest/browser-playwright.
+      # Only chromium is configured in packages/react-ui/vitest.config.ts.
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+        working-directory: packages/react-ui
+
+      - name: Test (components)
+        run: npm run test --workspace=@sonordia/ui

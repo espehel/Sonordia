@@ -200,3 +200,6 @@ apps/desktop/bridge/dist/
 
 # Playwright
 .playwright-mcp
+
+*storybook.log
+storybook-static

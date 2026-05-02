@@ -1,6 +1,13 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
 
 const args = process.argv.slice(2);
@@ -21,23 +28,36 @@ const result = spawnSync(
 );
 if (result.status !== 0) process.exit(result.status ?? 1);
 
-const uiDir = "src/components/ui";
-let changed = 0;
-for (const file of readdirSync(uiDir)) {
-  if (!file.endsWith(".tsx")) continue;
-  const path = join(uiDir, file);
-  const original = readFileSync(path, "utf8");
-  const fixed = original
+// Each component lives in its own folder: src/components/<name>/<name>.tsx.
+// The shadcn CLI emits flat files into the `ui` alias dir (src/components),
+// so anything sitting at the top level of components/ is a freshly added
+// component we need to fold into a subfolder and normalize its imports.
+const componentsDir = "src/components";
+let moved = 0;
+for (const entry of readdirSync(componentsDir)) {
+  if (!entry.endsWith(".tsx")) continue;
+  const flatPath = join(componentsDir, entry);
+  if (!statSync(flatPath).isFile()) continue;
+
+  const name = entry.replace(/\.tsx$/, "");
+  const folder = join(componentsDir, name);
+  const finalPath = join(folder, entry);
+
+  const fixed = readFileSync(flatPath, "utf8")
     .replace(/from "@\/lib\/utils"/g, 'from "../../lib/utils"')
-    .replace(/from "@\/components\/ui\/([\w-]+)"/g, 'from "./$1"');
-  if (fixed !== original) {
-    writeFileSync(path, fixed);
-    console.log(`normalized imports in ${path}`);
-    changed++;
-  }
+    // Sibling component imports — shadcn emits "@/components/<x>" because that's
+    // what the `ui` alias points to in components.json.
+    .replace(/from "@\/components\/([\w-]+)"/g, 'from "../$1/$1"');
+
+  mkdirSync(folder, { recursive: true });
+  writeFileSync(finalPath, fixed);
+  unlinkSync(flatPath);
+
+  console.log(`moved ${flatPath} → ${finalPath}`);
+  moved++;
 }
 
-if (changed === 0) console.log("No imports needed rewriting.");
+if (moved === 0) console.log("No new components to relocate.");
 console.log(
-  '\nReminder: add the new subpath to "exports" in package.json (e.g. "./<name>": "./src/components/ui/<name>.tsx").'
+  '\nReminder: add the new subpath to "exports" in package.json (e.g. "./<name>": "./src/components/<name>/<name>.tsx").'
 );
