@@ -38,3 +38,20 @@ dir = "apps/desktop"
 description = "Run React UI docs with storybook"
 run = "npm run storybook"
 dir = "packages/react-ui"
+
+[tasks."desktop:bridge"]
+description = "Build PyInstaller analyzer binary for current OS"
+run = [
+  "uv sync --group build",
+  "uv run pyinstaller bridge/analyzer.spec --noconfirm --distpath bridge/dist --workpath bridge/build"
+]
+dir = "apps/desktop"
+
+[tasks."desktop:release"]
+description = "Build production desktop app for current OS (unsigned, no publish)"
+depends = ["desktop:bridge"]
+run = [
+  "npm run build",
+  "npx electron-builder --publish never --config.mac.identity=null"
+]
+dir = "apps/desktop"

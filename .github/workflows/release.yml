@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & publish — ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install Python deps
+        run: uv sync --group build
+
+      # Full install (no --ignore-scripts) so apps/desktop's electron-rebuild
+      # postinstall compiles better-sqlite3 against the Electron ABI.
+      - name: Install Node deps
+        run: npm ci
+
+      - name: Build Python bridge (PyInstaller)
+        run: uv run pyinstaller bridge/analyzer.spec --noconfirm --distpath bridge/dist --workpath bridge/build
+        working-directory: apps/desktop
+
+      - name: Build desktop renderer
+        run: npm run build --workspace=@sonordia/desktop
+
+      - name: Package & publish to GitHub release
+        run: npx electron-builder --publish always
+        working-directory: apps/desktop
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

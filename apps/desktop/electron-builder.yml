@@ -6,7 +6,9 @@ directories:
 files:
   - out/**/*
 extraResources:
-  - from: bridge/dist/
+  # PyInstaller --onedir output. The contents of dist/analyzer/ become Resources/bridge/*,
+  # so the executable lands at Resources/bridge/analyzer (analyzer.exe on Windows).
+  - from: bridge/dist/analyzer/
     to: bridge
     filter:
       - "**/*"
@@ -21,3 +23,14 @@ mac:
   target:
     - dmg
     - zip
+win:
+  target:
+    - nsis
+    - zip
+linux:
+  category: AudioVideo
+  target:
+    - AppImage
+    - deb
+publish:
+  provider: github

@@ -1,3 +1,6 @@
 [tool.uv.workspace]
 members = ["packages/*", "apps/api"]
 exclude = ["packages/react-ui"]
+
+[dependency-groups]
+build = ["pyinstaller>=6"]

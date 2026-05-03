@@ -83,7 +83,8 @@ export class PythonBridge extends EventEmitter {
       args = ["run", "python", "apps/desktop/bridge/analyzer.py"];
       cwd = repoRoot;
     } else {
-      const resourcePath = join(process.resourcesPath, "bridge", "analyzer");
+      const binaryName = process.platform === "win32" ? "analyzer.exe" : "analyzer";
+      const resourcePath = join(process.resourcesPath, "bridge", binaryName);
 
       if (!existsSync(resourcePath)) {
         const err = new Error(`Analyzer binary not found at: ${resourcePath}`);
