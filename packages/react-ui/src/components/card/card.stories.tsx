@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Button } from "../button/button";
+import { Button } from '../button/button';
 import {
   Card,
   CardAction,
@@ -9,13 +9,13 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "./card";
+} from './card';
 
 const meta = {
-  title: "Components/Card",
+  title: 'Components/Card',
   component: Card,
-  tags: ["autodocs"],
-  parameters: { layout: "centered" },
+  tags: ['autodocs'],
+  parameters: { layout: 'centered' },
   decorators: [
     (Story) => (
       <div className="w-96">

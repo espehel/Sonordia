@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from 'react';
 
-export type VizLayer = "waveform" | "ruler" | "beats" | "rms" | "chroma" | "keytrack";
+export type VizLayer = 'waveform' | 'ruler' | 'beats' | 'rms' | 'chroma' | 'keytrack';
 
 export type VizSettings = Record<VizLayer, boolean>;
 
-const STORAGE_KEY = "sonordia:viz-settings";
+const STORAGE_KEY = 'sonordia:viz-settings';
 
 const defaults: VizSettings = {
   waveform: true,
@@ -28,7 +28,7 @@ function load(): VizSettings {
 
 export function useVizSettings() {
   const [settings, setSettings] = useState<VizSettings>(() =>
-    typeof window !== "undefined" ? load() : defaults
+    typeof window !== 'undefined' ? load() : defaults,
   );
 
   useEffect(() => {

@@ -1,12 +1,12 @@
-import { app } from "electron";
-import { join } from "path";
-import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from "fs";
+import { app } from 'electron';
+import { join } from 'path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'fs';
 
-export const VIZ_FEATURES = ["waveform", "rms", "chroma", "keytrack", "beats"] as const;
+export const VIZ_FEATURES = ['waveform', 'rms', 'chroma', 'keytrack', 'beats'] as const;
 export type VizFeature = (typeof VIZ_FEATURES)[number];
 
 export function getVizDir(songId: string): string {
-  return join(app.getPath("userData"), "viz", songId);
+  return join(app.getPath('userData'), 'viz', songId);
 }
 
 export function ensureVizDir(songId: string): string {
@@ -31,7 +31,7 @@ export function readVizFile<T = unknown>(songId: string, feature: VizFeature): T
   const path = getVizFilePath(songId, feature);
   if (!existsSync(path)) return null;
   try {
-    return JSON.parse(readFileSync(path, "utf-8")) as T;
+    return JSON.parse(readFileSync(path, 'utf-8')) as T;
   } catch (err) {
     console.error(`[viz-cache] failed to read ${path}:`, err);
     return null;

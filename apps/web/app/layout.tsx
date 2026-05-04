@@ -1,23 +1,23 @@
-import type { Metadata } from "next";
-import { Geist } from "next/font/google";
-import { ThemeProvider } from "next-themes";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Geist } from 'next/font/google';
+import { ThemeProvider } from 'next-themes';
+import './globals.css';
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
+  : 'http://localhost:3000';
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Sonordia — native desktop music player",
+  title: 'Sonordia — native desktop music player',
   description:
-    "Open-source music player for macOS, Windows, and Linux. Browse your local library, build playlists, listen.",
+    'Open-source music player for macOS, Windows, and Linux. Browse your local library, build playlists, listen.',
 };
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  display: "swap",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  display: 'swap',
+  subsets: ['latin'],
 });
 
 export default function RootLayout({

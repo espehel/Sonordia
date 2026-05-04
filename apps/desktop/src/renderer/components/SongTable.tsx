@@ -1,6 +1,6 @@
-import { Table, TableBody, TableHead, TableHeader, TableRow } from "@sonordia/ui/table";
-import type { Song } from "../types";
-import { SongRow } from "./SongRow";
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@sonordia/ui/table';
+import type { Song } from '../types';
+import { SongRow } from './SongRow';
 
 interface SongTableProps {
   songs: Song[];

@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from "react";
-import { toast } from "@sonordia/ui/sonner";
-import type { BridgeStatus } from "../types";
+import { useState, useEffect, useRef } from 'react';
+import { toast } from '@sonordia/ui/sonner';
+import type { BridgeStatus } from '../types';
 
 export function useAnalysis() {
-  const [bridgeStatus, setBridgeStatus] = useState<BridgeStatus>({ status: "starting" });
-  const prevStatus = useRef<BridgeStatus["status"]>("starting");
+  const [bridgeStatus, setBridgeStatus] = useState<BridgeStatus>({ status: 'starting' });
+  const prevStatus = useRef<BridgeStatus['status']>('starting');
 
   useEffect(() => {
     const unsub = window.api.onBridgeStatus((status: BridgeStatus) => {
@@ -13,12 +13,12 @@ export function useAnalysis() {
 
       // Toast only on transitions, not every status push.
       if (prev !== next) {
-        if (next === "exited" || next === "error") {
+        if (next === 'exited' || next === 'error') {
           toast.error(`Analysis bridge ${next}`, {
-            description: status.error ?? "Audio analysis is unavailable until it restarts.",
+            description: status.error ?? 'Audio analysis is unavailable until it restarts.',
           });
-        } else if (next === "ready" && (prev === "exited" || prev === "error")) {
-          toast.success("Analysis bridge recovered");
+        } else if (next === 'ready' && (prev === 'exited' || prev === 'error')) {
+          toast.success('Analysis bridge recovered');
         }
       }
 

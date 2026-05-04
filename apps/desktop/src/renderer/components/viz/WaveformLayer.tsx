@@ -1,6 +1,6 @@
-import { useRef } from "react";
-import type { WaveformViz } from "../../types";
-import { useCanvasDraw } from "./useCanvas";
+import { useRef } from 'react';
+import type { WaveformViz } from '../../types';
+import { useCanvasDraw } from './useCanvas';
 
 interface Props {
   data: WaveformViz | undefined;
@@ -9,8 +9,8 @@ interface Props {
   progress: number; // 0..1
 }
 
-const PLAYED = "#1a1a1a";
-const UNPLAYED = "#bbb";
+const PLAYED = '#1a1a1a';
+const UNPLAYED = '#bbb';
 
 export function WaveformLayer({ data, width, height, progress }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -35,8 +35,8 @@ export function WaveformLayer({ data, width, height, progress }: Props) {
         ctx.fillRect(x, Math.min(top, mid - 1), 1, Math.max(1, bot - top));
       }
     },
-    [data, progress]
+    [data, progress],
   );
 
-  return <canvas ref={canvasRef} style={{ display: "block" }} />;
+  return <canvas ref={canvasRef} style={{ display: 'block' }} />;
 }

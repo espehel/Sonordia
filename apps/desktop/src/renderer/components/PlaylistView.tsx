@@ -1,10 +1,10 @@
-import { useState, useRef } from "react";
-import { X } from "lucide-react";
-import { Button } from "@sonordia/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@sonordia/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@sonordia/ui/table";
-import { cn } from "@sonordia/ui/utils";
-import type { PlaylistSong, Song } from "../types";
+import { useState, useRef } from 'react';
+import { X } from 'lucide-react';
+import { Button } from '@sonordia/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@sonordia/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@sonordia/ui/table';
+import { cn } from '@sonordia/ui/utils';
+import type { PlaylistSong, Song } from '../types';
 
 interface PlaylistViewProps {
   playlistSongs: PlaylistSong[];
@@ -16,7 +16,7 @@ interface PlaylistViewProps {
   activeSongId?: string | null;
 }
 
-const truncate = "max-w-60 truncate";
+const truncate = 'max-w-60 truncate';
 
 export function PlaylistView({
   playlistSongs,
@@ -83,17 +83,17 @@ export function PlaylistView({
                 onDrop={handleDrop}
                 onClick={() => onPlay?.(song)}
                 className={cn(
-                  onPlay ? "cursor-pointer" : "cursor-grab",
-                  dragIdx === idx && "opacity-40",
-                  activeSongId === song.id && "bg-accent/40"
+                  onPlay ? 'cursor-pointer' : 'cursor-grab',
+                  dragIdx === idx && 'opacity-40',
+                  activeSongId === song.id && 'bg-accent/40',
                 )}
               >
                 <TableCell className="text-muted-foreground w-10 text-center">{idx + 1}</TableCell>
-                <TableCell className={truncate}>{song.title ?? "—"}</TableCell>
-                <TableCell className={truncate}>{song.artist ?? "—"}</TableCell>
-                <TableCell className="text-center">{song.key_camelot ?? "—"}</TableCell>
+                <TableCell className={truncate}>{song.title ?? '—'}</TableCell>
+                <TableCell className={truncate}>{song.artist ?? '—'}</TableCell>
+                <TableCell className="text-center">{song.key_camelot ?? '—'}</TableCell>
                 <TableCell className="text-center">
-                  {song.bpm != null ? song.bpm.toFixed(1) : "—"}
+                  {song.bpm != null ? song.bpm.toFixed(1) : '—'}
                 </TableCell>
                 <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                   <Button

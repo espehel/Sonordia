@@ -1,19 +1,19 @@
-import { Button } from "@sonordia/ui/button";
-import { Toaster } from "@sonordia/ui/sonner";
-import { ThemeToggle } from "@sonordia/ui/theme-toggle";
-import { TooltipProvider } from "@sonordia/ui/tooltip";
-import { useSongs } from "./hooks/useSongs";
-import { useAnalysis } from "./hooks/useAnalysis";
-import { usePlaylists } from "./hooks/usePlaylists";
-import { usePlayer } from "./hooks/usePlayer";
-import { useVizSettings } from "./hooks/useVizSettings";
-import { useBackfill } from "./hooks/useBackfill";
-import { ImportButton } from "./components/ImportButton";
-import { SongTable } from "./components/SongTable";
-import { AnalysisStatus } from "./components/AnalysisStatus";
-import { Sidebar } from "./components/Sidebar";
-import { PlaylistView } from "./components/PlaylistView";
-import { PlayerPanel } from "./components/PlayerPanel";
+import { Button } from '@sonordia/ui/button';
+import { Toaster } from '@sonordia/ui/sonner';
+import { ThemeToggle } from '@sonordia/ui/theme-toggle';
+import { TooltipProvider } from '@sonordia/ui/tooltip';
+import { useSongs } from './hooks/useSongs';
+import { useAnalysis } from './hooks/useAnalysis';
+import { usePlaylists } from './hooks/usePlaylists';
+import { usePlayer } from './hooks/usePlayer';
+import { useVizSettings } from './hooks/useVizSettings';
+import { useBackfill } from './hooks/useBackfill';
+import { ImportButton } from './components/ImportButton';
+import { SongTable } from './components/SongTable';
+import { AnalysisStatus } from './components/AnalysisStatus';
+import { Sidebar } from './components/Sidebar';
+import { PlaylistView } from './components/PlaylistView';
+import { PlayerPanel } from './components/PlayerPanel';
 
 function App(): JSX.Element {
   const { songs, loading, importFiles, removeSong } = useSongs();
@@ -34,8 +34,8 @@ function App(): JSX.Element {
   const { settings, toggle: toggleLayer } = useVizSettings();
   const backfill = useBackfill();
 
-  const hasPending = songs.some((s) => s.analysis_status === "pending");
-  const bridgeReady = bridgeStatus.status === "ready";
+  const hasPending = songs.some((s) => s.analysis_status === 'pending');
+  const bridgeReady = bridgeStatus.status === 'ready';
   const selectedPlaylist = playlists.find((p) => p.id === selectedId);
   const showPlayer = player.song != null;
 
@@ -51,11 +51,11 @@ function App(): JSX.Element {
           onDelete={deletePlaylist}
         />
 
-        <div className={`flex-1 overflow-auto p-6 ${showPlayer ? "pb-[264px]" : ""}`}>
+        <div className={`flex-1 overflow-auto p-6 ${showPlayer ? 'pb-[264px]' : ''}`}>
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <h1 className="text-xl font-semibold">
-                {selectedPlaylist ? selectedPlaylist.name : "All Songs"}
+                {selectedPlaylist ? selectedPlaylist.name : 'All Songs'}
               </h1>
               <AnalysisStatus status={bridgeStatus} />
             </div>

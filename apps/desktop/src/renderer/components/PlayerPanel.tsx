@@ -1,16 +1,16 @@
-import { useLayoutEffect, useRef, useState } from "react";
-import { Pause, Play } from "lucide-react";
-import { Button } from "@sonordia/ui/button";
-import { cn } from "@sonordia/ui/utils";
-import type { BackfillProgress, VizPayload, Song } from "../types";
-import type { VizSettings, VizLayer } from "../hooks/useVizSettings";
-import { VizToolbar } from "./VizToolbar";
-import { WaveformLayer } from "./viz/WaveformLayer";
-import { RulerLayer } from "./viz/RulerLayer";
-import { BeatGridLayer } from "./viz/BeatGridLayer";
-import { RmsLayer } from "./viz/RmsLayer";
-import { ChromaLayer } from "./viz/ChromaLayer";
-import { KeyTrackLayer } from "./viz/KeyTrackLayer";
+import { useLayoutEffect, useRef, useState } from 'react';
+import { Pause, Play } from 'lucide-react';
+import { Button } from '@sonordia/ui/button';
+import { cn } from '@sonordia/ui/utils';
+import type { BackfillProgress, VizPayload, Song } from '../types';
+import type { VizSettings, VizLayer } from '../hooks/useVizSettings';
+import { VizToolbar } from './VizToolbar';
+import { WaveformLayer } from './viz/WaveformLayer';
+import { RulerLayer } from './viz/RulerLayer';
+import { BeatGridLayer } from './viz/BeatGridLayer';
+import { RmsLayer } from './viz/RmsLayer';
+import { ChromaLayer } from './viz/ChromaLayer';
+import { KeyTrackLayer } from './viz/KeyTrackLayer';
 
 interface Props {
   song: Song | null;
@@ -33,10 +33,10 @@ const CHROMA_H = 80;
 const KEYTRACK_H = 22;
 
 function fmt(sec: number): string {
-  if (!isFinite(sec) || sec < 0) return "0:00";
+  if (!isFinite(sec) || sec < 0) return '0:00';
   const m = Math.floor(sec / 60);
   const s = Math.floor(sec % 60);
-  return `${m}:${s.toString().padStart(2, "0")}`;
+  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 export function PlayerPanel(props: Props) {
@@ -99,22 +99,22 @@ export function PlayerPanel(props: Props) {
       {/* Toolbar */}
       <div
         className={cn(
-          "flex min-h-11 items-center gap-4 px-4 py-2",
-          stackHeight > 0 && "border-border border-b"
+          'flex min-h-11 items-center gap-4 px-4 py-2',
+          stackHeight > 0 && 'border-border border-b',
         )}
       >
         <Button
           onClick={onPlayPause}
           size="icon"
           className="size-8 shrink-0 rounded-full"
-          aria-label={isPlaying ? "Pause" : "Play"}
+          aria-label={isPlaying ? 'Pause' : 'Play'}
         >
           {isPlaying ? <Pause className="fill-current" /> : <Play className="fill-current" />}
         </Button>
 
         <div className="shrink-0 text-sm">
-          <div className="max-w-60 truncate font-semibold">{song.title ?? "—"}</div>
-          <div className="text-muted-foreground text-[11px]">{song.artist ?? "—"}</div>
+          <div className="max-w-60 truncate font-semibold">{song.title ?? '—'}</div>
+          <div className="text-muted-foreground text-[11px]">{song.artist ?? '—'}</div>
         </div>
 
         <div className="text-muted-foreground shrink-0 text-xs tabular-nums">
@@ -123,17 +123,17 @@ export function PlayerPanel(props: Props) {
 
         <div className="flex-1" />
 
-        {backfill.state === "running" && (
+        {backfill.state === 'running' && (
           <div className="text-muted-foreground text-[11px]">
             Preparing visualizations… {backfill.completed}/{backfill.total}
           </div>
         )}
-        {vizLoading && backfill.state !== "running" && (
+        {vizLoading && backfill.state !== 'running' && (
           <div className="text-muted-foreground text-[11px]">Loading…</div>
         )}
-        {!vizLoading && vizMissing.length > 0 && backfill.state !== "running" && (
+        {!vizLoading && vizMissing.length > 0 && backfill.state !== 'running' && (
           <div className="text-muted-foreground text-[11px]">
-            Computing {vizMissing.join(", ")}…
+            Computing {vizMissing.join(', ')}…
           </div>
         )}
 
@@ -142,17 +142,17 @@ export function PlayerPanel(props: Props) {
 
       {/* Stack of viz layers */}
       {stackHeight > 0 && (
-        <div ref={stackRef} style={{ position: "relative", width: "100%", height: stackHeight }}>
+        <div ref={stackRef} style={{ position: 'relative', width: '100%', height: stackHeight }}>
           {showRuler && (
             <RulerLayer duration={duration} beats={viz.beats} width={stackWidth} height={RULER_H} />
           )}
           {showWaveformRow && (
             <div
               style={{
-                position: "relative",
+                position: 'relative',
                 width: stackWidth,
                 height: WAVEFORM_H,
-                background: "#fff",
+                background: '#fff',
               }}
             >
               {settings.waveform && (
@@ -164,7 +164,7 @@ export function PlayerPanel(props: Props) {
                 />
               )}
               {settings.rms && (
-                <div style={{ position: "absolute", inset: 0 }}>
+                <div style={{ position: 'absolute', inset: 0 }}>
                   <RmsLayer data={viz.rms} width={stackWidth} height={WAVEFORM_H} />
                 </div>
               )}
@@ -183,12 +183,12 @@ export function PlayerPanel(props: Props) {
           {showBeats && stackWidth > 0 && (
             <div
               style={{
-                position: "absolute",
+                position: 'absolute',
                 left: 0,
                 top: 0,
                 width: stackWidth,
                 height: stackHeight,
-                pointerEvents: "none",
+                pointerEvents: 'none',
               }}
             >
               <BeatGridLayer
@@ -204,14 +204,14 @@ export function PlayerPanel(props: Props) {
           {duration > 0 && (
             <div
               style={{
-                position: "absolute",
+                position: 'absolute',
                 left: playheadX,
                 top: 0,
                 width: 2,
                 height: stackHeight,
-                background: "#e63946",
-                pointerEvents: "none",
-                transform: "translateX(-1px)",
+                background: '#e63946',
+                pointerEvents: 'none',
+                transform: 'translateX(-1px)',
               }}
             />
           )}
@@ -220,9 +220,9 @@ export function PlayerPanel(props: Props) {
           <div
             onClick={handleSeek}
             style={{
-              position: "absolute",
+              position: 'absolute',
               inset: 0,
-              cursor: duration > 0 ? "pointer" : "default",
+              cursor: duration > 0 ? 'pointer' : 'default',
             }}
           />
         </div>

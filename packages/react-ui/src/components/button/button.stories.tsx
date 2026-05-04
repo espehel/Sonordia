@@ -1,26 +1,26 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, userEvent } from "storybook/test";
-import { ArrowRight, Mail } from "lucide-react";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, fn, userEvent } from 'storybook/test';
+import { ArrowRight, Mail } from 'lucide-react';
 
-import { Button } from "./button";
+import { Button } from './button';
 
 const meta = {
-  title: "Components/Button",
+  title: 'Components/Button',
   component: Button,
-  tags: ["autodocs"],
-  parameters: { layout: "centered" },
-  args: { children: "Button", onClick: fn() },
+  tags: ['autodocs'],
+  parameters: { layout: 'centered' },
+  args: { children: 'Button', onClick: fn() },
   argTypes: {
     variant: {
-      control: "select",
-      options: ["default", "destructive", "outline", "secondary", "ghost", "link"],
+      control: 'select',
+      options: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'],
     },
     size: {
-      control: "select",
-      options: ["default", "xs", "sm", "lg", "icon", "icon-xs", "icon-sm", "icon-lg"],
+      control: 'select',
+      options: ['default', 'xs', 'sm', 'lg', 'icon', 'icon-xs', 'icon-sm', 'icon-lg'],
     },
-    disabled: { control: "boolean" },
-    asChild: { control: "boolean" },
+    disabled: { control: 'boolean' },
+    asChild: { control: 'boolean' },
   },
 } satisfies Meta<typeof Button>;
 
@@ -30,23 +30,23 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 
 export const Destructive: Story = {
-  args: { variant: "destructive", children: "Delete" },
+  args: { variant: 'destructive', children: 'Delete' },
 };
 
 export const Outline: Story = {
-  args: { variant: "outline" },
+  args: { variant: 'outline' },
 };
 
 export const Secondary: Story = {
-  args: { variant: "secondary" },
+  args: { variant: 'secondary' },
 };
 
 export const Ghost: Story = {
-  args: { variant: "ghost" },
+  args: { variant: 'ghost' },
 };
 
 export const Link: Story = {
-  args: { variant: "link" },
+  args: { variant: 'link' },
 };
 
 export const Variants: Story = {
@@ -135,24 +135,24 @@ export const AsChild: Story = {
     docs: {
       description: {
         story:
-          "Use `asChild` to merge button styles onto a different element (here, an anchor) without losing semantics.",
+          'Use `asChild` to merge button styles onto a different element (here, an anchor) without losing semantics.',
       },
     },
   },
 };
 
 export const FiresOnClick: Story = {
-  args: { children: "Click me" },
+  args: { children: 'Click me' },
   play: async ({ canvas, args }) => {
-    await userEvent.click(canvas.getByRole("button", { name: "Click me" }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Click me' }));
     await expect(args.onClick).toHaveBeenCalledTimes(1);
   },
 };
 
 export const DisabledDoesNotFire: Story = {
-  args: { children: "Disabled", disabled: true },
+  args: { children: 'Disabled', disabled: true },
   play: async ({ canvas, args }) => {
-    const button = canvas.getByRole("button", { name: "Disabled" });
+    const button = canvas.getByRole('button', { name: 'Disabled' });
     await expect(button).toBeDisabled();
     await userEvent.click(button, { pointerEventsCheck: 0 });
     await expect(args.onClick).not.toHaveBeenCalled();

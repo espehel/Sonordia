@@ -1,19 +1,19 @@
-import Link from "next/link";
-import { Suspense } from "react";
+import Link from 'next/link';
+import { Suspense } from 'react';
 
-import { AuthButton } from "@/components/auth-button";
-import { EnvVarWarning } from "@/components/env-var-warning";
-import { hasEnvVars } from "@/lib/utils";
+import { AuthButton } from '@/components/auth-button';
+import { EnvVarWarning } from '@/components/env-var-warning';
+import { hasEnvVars } from '@/lib/utils';
 
 export function SiteNav() {
   return (
-    <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-      <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-        <div className="flex gap-6 items-center">
-          <Link href="/" className="font-semibold tracking-tight text-base">
+    <nav className="border-b-foreground/10 flex h-16 w-full justify-center border-b">
+      <div className="flex w-full max-w-5xl items-center justify-between p-3 px-5 text-sm">
+        <div className="flex items-center gap-6">
+          <Link href="/" className="text-base font-semibold tracking-tight">
             Sonordia
           </Link>
-          <div className="hidden sm:flex items-center gap-4 text-foreground/70">
+          <div className="text-foreground/70 hidden items-center gap-4 sm:flex">
             <Link href="/download" className="hover:text-foreground transition-colors">
               Download
             </Link>

@@ -1,19 +1,19 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useState } from "react";
-import { expect, fn, userEvent } from "storybook/test";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useState } from 'react';
+import { expect, fn, userEvent } from 'storybook/test';
 
-import { Checkbox } from "./checkbox";
-import { Label } from "../label/label";
+import { Checkbox } from './checkbox';
+import { Label } from '../label/label';
 
 const meta = {
-  title: "Components/Checkbox",
+  title: 'Components/Checkbox',
   component: Checkbox,
-  tags: ["autodocs"],
-  parameters: { layout: "centered" },
+  tags: ['autodocs'],
+  parameters: { layout: 'centered' },
   args: { onCheckedChange: fn() },
   argTypes: {
-    checked: { control: "boolean" },
-    disabled: { control: "boolean" },
+    checked: { control: 'boolean' },
+    disabled: { control: 'boolean' },
   },
 } satisfies Meta<typeof Checkbox>;
 
@@ -21,27 +21,27 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: { "aria-label": "Accept terms" },
+  args: { 'aria-label': 'Accept terms' },
 };
 
 export const Checked: Story = {
-  args: { defaultChecked: true, "aria-label": "Subscribed" },
+  args: { defaultChecked: true, 'aria-label': 'Subscribed' },
 };
 
 export const Indeterminate: Story = {
-  args: { checked: "indeterminate", "aria-label": "Mixed selection" },
+  args: { checked: 'indeterminate', 'aria-label': 'Mixed selection' },
 };
 
 export const Disabled: Story = {
-  args: { disabled: true, "aria-label": "Locked" },
+  args: { disabled: true, 'aria-label': 'Locked' },
 };
 
 export const DisabledChecked: Story = {
-  args: { disabled: true, defaultChecked: true, "aria-label": "Locked checked" },
+  args: { disabled: true, defaultChecked: true, 'aria-label': 'Locked checked' },
 };
 
 export const Invalid: Story = {
-  args: { "aria-invalid": true, "aria-label": "Invalid" },
+  args: { 'aria-invalid': true, 'aria-label': 'Invalid' },
 };
 
 export const WithLabel: Story = {
@@ -71,7 +71,7 @@ export const WithLabelDisabled: Story = {
 };
 
 export const TogglesOnClick: Story = {
-  args: { "aria-label": "Toggle me" },
+  args: { 'aria-label': 'Toggle me' },
   render: function Toggling(args) {
     const [checked, setChecked] = useState(false);
     return (
@@ -86,7 +86,7 @@ export const TogglesOnClick: Story = {
     );
   },
   play: async ({ canvas, args }) => {
-    const checkbox = canvas.getByRole("checkbox", { name: "Toggle me" });
+    const checkbox = canvas.getByRole('checkbox', { name: 'Toggle me' });
     await expect(checkbox).not.toBeChecked();
     await userEvent.click(checkbox);
     await expect(checkbox).toBeChecked();

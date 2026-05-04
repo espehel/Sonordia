@@ -1,9 +1,9 @@
-import { useState, useRef } from "react";
-import { Button } from "@sonordia/ui/button";
-import { Card, CardContent } from "@sonordia/ui/card";
-import { Toaster, toast } from "@sonordia/ui/sonner";
-import { ThemeToggle } from "@sonordia/ui/theme-toggle";
-import { cn } from "@sonordia/ui/utils";
+import { useState, useRef } from 'react';
+import { Button } from '@sonordia/ui/button';
+import { Card, CardContent } from '@sonordia/ui/card';
+import { Toaster, toast } from '@sonordia/ui/sonner';
+import { ThemeToggle } from '@sonordia/ui/theme-toggle';
+import { cn } from '@sonordia/ui/utils';
 
 interface KeyResult {
   file: string;
@@ -18,30 +18,30 @@ interface BpmResult {
   [key: string]: unknown;
 }
 
-type Status = "idle" | "loading" | "done";
+type Status = 'idle' | 'loading' | 'done';
 
 export default function App() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
-  const [status, setStatus] = useState<Status>("idle");
+  const [status, setStatus] = useState<Status>('idle');
   const [keyResult, setKeyResult] = useState<KeyResult | null>(null);
   const [bpmResult, setBpmResult] = useState<BpmResult | null>(null);
 
   async function analyze() {
     if (!file) return;
-    setStatus("loading");
+    setStatus('loading');
     setKeyResult(null);
     setBpmResult(null);
 
     const form1 = new FormData();
-    form1.append("file", file);
+    form1.append('file', file);
     const form2 = new FormData();
-    form2.append("file", file);
+    form2.append('file', file);
 
     try {
       const [keyRes, bpmRes] = await Promise.all([
-        fetch("/predict", { method: "POST", body: form1 }),
-        fetch("/analyze/bpm", { method: "POST", body: form2 }),
+        fetch('/predict', { method: 'POST', body: form1 }),
+        fetch('/analyze/bpm', { method: 'POST', body: form2 }),
       ]);
 
       const [key, bpm] = await Promise.all([
@@ -55,10 +55,10 @@ export default function App() {
 
       setKeyResult(key);
       setBpmResult(bpm);
-      setStatus("done");
+      setStatus('done');
     } catch (e) {
-      toast.error("Analysis failed", { description: String(e) });
-      setStatus("idle");
+      toast.error('Analysis failed', { description: String(e) });
+      setStatus('idle');
     }
   }
 
@@ -81,23 +81,23 @@ export default function App() {
       <div
         onClick={() => inputRef.current?.click()}
         className={cn(
-          "mb-4 cursor-pointer rounded-lg border-2 border-dashed px-6 py-10 text-center transition-colors",
-          file ? "border-emerald-300 bg-emerald-50" : "border-border bg-muted/30 hover:bg-muted/50"
+          'mb-4 cursor-pointer rounded-lg border-2 border-dashed px-6 py-10 text-center transition-colors',
+          file ? 'border-emerald-300 bg-emerald-50' : 'border-border bg-muted/30 hover:bg-muted/50',
         )}
       >
-        {file ? file.name : "Click to select an audio file"}
+        {file ? file.name : 'Click to select an audio file'}
       </div>
 
       <Button
         onClick={analyze}
-        disabled={!file || status === "loading"}
+        disabled={!file || status === 'loading'}
         size="lg"
         className="w-full"
       >
-        {status === "loading" ? "Analyzing..." : "Analyze"}
+        {status === 'loading' ? 'Analyzing...' : 'Analyze'}
       </Button>
 
-      {status === "done" && keyResult && bpmResult && (
+      {status === 'done' && keyResult && bpmResult && (
         <Card className="mt-8">
           <CardContent className="grid grid-cols-3 gap-4 text-center">
             <div>

@@ -1,10 +1,10 @@
-import { BrowserWindow } from "electron";
-import { listSongs } from "./db";
-import { PythonBridge } from "./python-bridge";
-import { ensureVizDir, listMissingFeatures, VizFeature } from "./viz-cache";
+import { BrowserWindow } from 'electron';
+import { listSongs } from './db';
+import { PythonBridge } from './python-bridge';
+import { ensureVizDir, listMissingFeatures, VizFeature } from './viz-cache';
 
 export interface BackfillProgress {
-  state: "idle" | "running" | "done";
+  state: 'idle' | 'running' | 'done';
   total: number;
   completed: number;
   currentSongId?: string;
@@ -14,7 +14,7 @@ export interface BackfillProgress {
 export class VizBackfill {
   private running = false;
   private cancelled = false;
-  private progress: BackfillProgress = { state: "idle", total: 0, completed: 0 };
+  private progress: BackfillProgress = { state: 'idle', total: 0, completed: 0 };
 
   constructor(private bridge: PythonBridge) {}
 
@@ -28,18 +28,18 @@ export class VizBackfill {
     this.cancelled = false;
 
     const candidates = listSongs()
-      .filter((s) => s.analysis_status === "done")
+      .filter((s) => s.analysis_status === 'done')
       .map((s) => ({ id: s.id, file_path: s.file_path, missing: listMissingFeatures(s.id) }))
       .filter((c) => c.missing.length > 0);
 
     if (candidates.length === 0) {
-      this.progress = { state: "idle", total: 0, completed: 0 };
+      this.progress = { state: 'idle', total: 0, completed: 0 };
       this.emit();
       this.running = false;
       return;
     }
 
-    this.progress = { state: "running", total: candidates.length, completed: 0 };
+    this.progress = { state: 'running', total: candidates.length, completed: 0 };
     this.emit();
 
     for (const c of candidates) {
@@ -59,7 +59,7 @@ export class VizBackfill {
     }
 
     this.progress = {
-      state: "done",
+      state: 'done',
       total: this.progress.total,
       completed: this.progress.completed,
     };
@@ -73,7 +73,7 @@ export class VizBackfill {
 
   private emit(): void {
     for (const win of BrowserWindow.getAllWindows()) {
-      win.webContents.send("viz:progress", this.progress);
+      win.webContents.send('viz:progress', this.progress);
     }
   }
 }

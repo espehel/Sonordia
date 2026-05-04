@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import { toast } from "@sonordia/ui/sonner";
-import type { Playlist, PlaylistSong } from "../types";
+import { useState, useEffect, useCallback } from 'react';
+import { toast } from '@sonordia/ui/sonner';
+import type { Playlist, PlaylistSong } from '../types';
 
 function errorMessage(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
@@ -40,7 +40,7 @@ export function usePlaylists() {
       toast.success(`Created “${playlist.name}”`);
       return playlist;
     } catch (e) {
-      toast.error("Failed to create playlist", { description: errorMessage(e) });
+      toast.error('Failed to create playlist', { description: errorMessage(e) });
       throw e;
     }
   }, []);
@@ -51,7 +51,7 @@ export function usePlaylists() {
       setPlaylists((prev) => prev.map((p) => (p.id === id ? { ...p, name } : p)));
       toast.success(`Renamed to “${name}”`);
     } catch (e) {
-      toast.error("Failed to rename playlist", { description: errorMessage(e) });
+      toast.error('Failed to rename playlist', { description: errorMessage(e) });
       throw e;
     }
   }, []);
@@ -67,11 +67,11 @@ export function usePlaylists() {
         }
         if (target) toast.success(`Deleted “${target.name}”`);
       } catch (e) {
-        toast.error("Failed to delete playlist", { description: errorMessage(e) });
+        toast.error('Failed to delete playlist', { description: errorMessage(e) });
         throw e;
       }
     },
-    [selectedId, playlists]
+    [selectedId, playlists],
   );
 
   const addSong = useCallback(
@@ -80,7 +80,7 @@ export function usePlaylists() {
       await window.api.playlists.addSong(selectedId, songId);
       await refreshSongs(selectedId);
     },
-    [selectedId, refreshSongs]
+    [selectedId, refreshSongs],
   );
 
   const removeSong = useCallback(
@@ -89,7 +89,7 @@ export function usePlaylists() {
       await window.api.playlists.removeSong(selectedId, songId);
       setPlaylistSongs((prev) => prev.filter((s) => s.id !== songId));
     },
-    [selectedId]
+    [selectedId],
   );
 
   const reorder = useCallback(
@@ -98,7 +98,7 @@ export function usePlaylists() {
       await window.api.playlists.reorder(selectedId, songIds);
       await refreshSongs(selectedId);
     },
-    [selectedId, refreshSongs]
+    [selectedId, refreshSongs],
   );
 
   return {

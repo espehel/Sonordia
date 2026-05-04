@@ -1,15 +1,15 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, userEvent, waitFor } from "storybook/test";
-import { CopyIcon } from "lucide-react";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, userEvent, waitFor } from 'storybook/test';
+import { CopyIcon } from 'lucide-react';
 
-import { Button } from "../button/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip";
+import { Button } from '../button/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
 const meta = {
-  title: "Components/Tooltip",
+  title: 'Components/Tooltip',
   component: Tooltip,
-  tags: ["autodocs"],
-  parameters: { layout: "centered" },
+  tags: ['autodocs'],
+  parameters: { layout: 'centered' },
   decorators: [
     (Story) => (
       <TooltipProvider>
@@ -38,7 +38,7 @@ export const Default: Story = {
 export const Sides: Story = {
   render: () => (
     <div className="grid grid-cols-2 gap-6">
-      {(["top", "right", "bottom", "left"] as const).map((side) => (
+      {(['top', 'right', 'bottom', 'left'] as const).map((side) => (
         <Tooltip key={side}>
           <TooltipTrigger asChild>
             <Button variant="outline">{side}</Button>
@@ -60,11 +60,11 @@ export const ShowsOnHover: Story = {
     </Tooltip>
   ),
   play: async ({ canvas }) => {
-    await userEvent.hover(canvas.getByRole("button", { name: "Hover me" }));
+    await userEvent.hover(canvas.getByRole('button', { name: 'Hover me' }));
     await waitFor(async () => {
       const tooltip = document.querySelector('[data-slot="tooltip-content"]');
       await expect(tooltip).toBeTruthy();
-      await expect(tooltip?.textContent).toContain("Visible after hover");
+      await expect(tooltip?.textContent).toContain('Visible after hover');
     });
   },
 };

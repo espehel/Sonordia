@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { Song, VizPayload } from "../types";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { Song, VizPayload } from '../types';
 
 interface PlayerState {
   song: Song | null;
@@ -27,9 +27,9 @@ export function usePlayer() {
   const [state, setState] = useState<PlayerState>(initialState);
   const songIdRef = useRef<string | null>(null);
 
-  if (!audioRef.current && typeof window !== "undefined") {
+  if (!audioRef.current && typeof window !== 'undefined') {
     audioRef.current = new Audio();
-    audioRef.current.preload = "metadata";
+    audioRef.current.preload = 'metadata';
   }
 
   // Drive currentTime via rAF while playing for a smooth playhead.
@@ -44,16 +44,16 @@ export function usePlayer() {
     const onPause = () => setState((s) => ({ ...s, isPlaying: false }));
     const onEnded = () => setState((s) => ({ ...s, isPlaying: false, currentTime: 0 }));
 
-    audio.addEventListener("loadedmetadata", onLoadedMeta);
-    audio.addEventListener("play", onPlay);
-    audio.addEventListener("pause", onPause);
-    audio.addEventListener("ended", onEnded);
+    audio.addEventListener('loadedmetadata', onLoadedMeta);
+    audio.addEventListener('play', onPlay);
+    audio.addEventListener('pause', onPause);
+    audio.addEventListener('ended', onEnded);
 
     return () => {
-      audio.removeEventListener("loadedmetadata", onLoadedMeta);
-      audio.removeEventListener("play", onPlay);
-      audio.removeEventListener("pause", onPause);
-      audio.removeEventListener("ended", onEnded);
+      audio.removeEventListener('loadedmetadata', onLoadedMeta);
+      audio.removeEventListener('play', onPlay);
+      audio.removeEventListener('pause', onPause);
+      audio.removeEventListener('ended', onEnded);
     };
   }, []);
 
@@ -91,7 +91,7 @@ export function usePlayer() {
       try {
         await window.api.viz.compute(songId);
       } catch (err) {
-        console.error("[player] viz.compute failed:", err);
+        console.error('[player] viz.compute failed:', err);
         return;
       }
       if (songIdRef.current !== songId) return;
@@ -122,10 +122,10 @@ export function usePlayer() {
       try {
         await audio.play();
       } catch (err) {
-        console.error("[player] play failed:", err);
+        console.error('[player] play failed:', err);
       }
     },
-    [loadViz]
+    [loadViz],
   );
 
   const toggle = useCallback(async () => {
@@ -135,7 +135,7 @@ export function usePlayer() {
       try {
         await audio.play();
       } catch (err) {
-        console.error("[player] play failed:", err);
+        console.error('[player] play failed:', err);
       }
     } else {
       audio.pause();
@@ -155,7 +155,7 @@ export function usePlayer() {
     const unsub = window.api.onVizProgress((progress) => {
       const id = songIdRef.current;
       if (!id) return;
-      if (progress.state === "done" || progress.currentSongId === id) {
+      if (progress.state === 'done' || progress.currentSongId === id) {
         window.api.viz.get(id).then((result) => {
           if (songIdRef.current !== id) return;
           setState((s) => ({ ...s, viz: result.data, vizMissing: result.missing }));

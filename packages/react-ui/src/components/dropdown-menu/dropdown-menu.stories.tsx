@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useState } from "react";
-import { expect, fn, userEvent, waitFor } from "storybook/test";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useState } from 'react';
+import { expect, fn, userEvent, waitFor } from 'storybook/test';
 
-import { Button } from "../button/button";
+import { Button } from '../button/button';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -18,13 +18,13 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "./dropdown-menu";
+} from './dropdown-menu';
 
 const meta = {
-  title: "Components/DropdownMenu",
+  title: 'Components/DropdownMenu',
   component: DropdownMenu,
-  tags: ["autodocs"],
-  parameters: { layout: "centered" },
+  tags: ['autodocs'],
+  parameters: { layout: 'centered' },
 } satisfies Meta<typeof DropdownMenu>;
 
 export default meta;
@@ -83,7 +83,7 @@ export const WithCheckboxItems: Story = {
 
 export const WithRadioItems: Story = {
   render: function RadioStory() {
-    const [position, setPosition] = useState("bottom");
+    const [position, setPosition] = useState('bottom');
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -141,11 +141,11 @@ export const FiresSelectionCallback: Story = {
   ),
   play: async ({ canvas }) => {
     onSelectProfile.mockClear();
-    await userEvent.click(canvas.getByRole("button", { name: "Actions" }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Actions' }));
     const profile = await waitFor(() =>
       Array.from(document.querySelectorAll('[data-slot="dropdown-menu-item"]')).find(
-        (el) => el.textContent === "Profile"
-      )
+        (el) => el.textContent === 'Profile',
+      ),
     );
     await userEvent.click(profile as HTMLElement);
     await expect(onSelectProfile).toHaveBeenCalledTimes(1);

@@ -1,6 +1,6 @@
-import { useRef } from "react";
-import type { ChromaViz } from "../../types";
-import { useCanvasDraw } from "./useCanvas";
+import { useRef } from 'react';
+import type { ChromaViz } from '../../types';
+import { useCanvasDraw } from './useCanvas';
 
 interface Props {
   data: ChromaViz | undefined;
@@ -9,7 +9,7 @@ interface Props {
 }
 
 // Index 0 = C (bottom row), 11 = B (top row).
-const PITCH_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const PITCH_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 export function ChromaLayer({ data, width, height }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -48,24 +48,24 @@ export function ChromaLayer({ data, width, height }: Props) {
       }
       ctx.putImageData(img, 0, 0);
     },
-    [data]
+    [data],
   );
 
   const rowH = height / PITCH_NAMES.length;
-  const isNatural = (n: string) => !n.includes("#");
+  const isNatural = (n: string) => !n.includes('#');
 
   return (
-    <div style={{ position: "relative", width, height }}>
-      <canvas ref={canvasRef} style={{ display: "block" }} />
+    <div style={{ position: 'relative', width, height }}>
+      <canvas ref={canvasRef} style={{ display: 'block' }} />
       <div
         style={{
-          position: "absolute",
+          position: 'absolute',
           left: 0,
           top: 0,
           width: 20,
           height,
-          pointerEvents: "none",
-          userSelect: "none",
+          pointerEvents: 'none',
+          userSelect: 'none',
         }}
       >
         {PITCH_NAMES.map((n, i) => {
@@ -75,16 +75,16 @@ export function ChromaLayer({ data, width, height }: Props) {
             <span
               key={n}
               style={{
-                position: "absolute",
+                position: 'absolute',
                 left: 2,
                 top: centerY,
-                transform: "translateY(-50%)",
+                transform: 'translateY(-50%)',
                 fontSize: 8,
                 lineHeight: 1,
                 fontWeight: isNatural(n) ? 600 : 400,
-                color: isNatural(n) ? "#222" : "#666",
-                background: "rgba(255,255,255,0.7)",
-                padding: "0 2px",
+                color: isNatural(n) ? '#222' : '#666',
+                background: 'rgba(255,255,255,0.7)',
+                padding: '0 2px',
                 borderRadius: 2,
               }}
             >

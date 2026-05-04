@@ -1,7 +1,7 @@
-import Database from "better-sqlite3";
-import { app } from "electron";
-import { join } from "path";
-import { v4 as uuid } from "uuid";
+import Database from 'better-sqlite3';
+import { app } from 'electron';
+import { join } from 'path';
+import { v4 as uuid } from 'uuid';
 
 export interface Song {
   id: string;
@@ -15,7 +15,7 @@ export interface Song {
   key_id: number | null;
   bpm: number | null;
   bpm_confidence: number | null;
-  analysis_status: "pending" | "analyzing" | "done" | "error";
+  analysis_status: 'pending' | 'analyzing' | 'done' | 'error';
   analysis_error: string | null;
   added_at: string;
   analyzed_at: string | null;
@@ -35,10 +35,10 @@ export interface PlaylistSong extends Song {
 let db: Database.Database;
 
 export function initDb(): void {
-  const dbPath = join(app.getPath("userData"), "library.db");
+  const dbPath = join(app.getPath('userData'), 'library.db');
   db = new Database(dbPath);
-  db.pragma("journal_mode = WAL");
-  db.pragma("foreign_keys = ON");
+  db.pragma('journal_mode = WAL');
+  db.pragma('foreign_keys = ON');
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS songs (
@@ -84,19 +84,19 @@ export function getDb(): Database.Database {
 // ── Songs ──
 
 export function listSongs(): Song[] {
-  return db.prepare("SELECT * FROM songs ORDER BY added_at DESC").all() as Song[];
+  return db.prepare('SELECT * FROM songs ORDER BY added_at DESC').all() as Song[];
 }
 
 export function getSong(id: string): Song | undefined {
-  return db.prepare("SELECT * FROM songs WHERE id = ?").get(id) as Song | undefined;
+  return db.prepare('SELECT * FROM songs WHERE id = ?').get(id) as Song | undefined;
 }
 
 function parseFilename(filePath: string): { title: string; artist: string | null } {
   const basename =
     filePath
-      .split("/")
+      .split('/')
       .pop()
-      ?.replace(/\.[^.]+$/, "") ?? filePath;
+      ?.replace(/\.[^.]+$/, '') ?? filePath;
   // Try "Artist - Title" pattern (common in music files)
   const match = basename.match(/^(.+?)\s*-\s*(.+)$/);
   if (match) {
@@ -118,7 +118,7 @@ export function addSongs(filePaths: string[]): Song[] {
       const id = uuid();
       const { title, artist } = parseFilename(filePath);
       insert.run(id, filePath, title, artist, now);
-      const song = db.prepare("SELECT * FROM songs WHERE file_path = ?").get(filePath) as Song;
+      const song = db.prepare('SELECT * FROM songs WHERE file_path = ?').get(filePath) as Song;
       if (song) songs.push(song);
     }
   });
@@ -128,7 +128,7 @@ export function addSongs(filePaths: string[]): Song[] {
 }
 
 export function removeSong(id: string): void {
-  db.prepare("DELETE FROM songs WHERE id = ?").run(id);
+  db.prepare('DELETE FROM songs WHERE id = ?').run(id);
 }
 
 export function updateSongAnalysis(
@@ -139,9 +139,9 @@ export function updateSongAnalysis(
     key_id?: number;
     bpm?: number;
     bpm_confidence?: number;
-    analysis_status: Song["analysis_status"];
+    analysis_status: Song['analysis_status'];
     analysis_error?: string | null;
-  }
+  },
 ): Song | undefined {
   const now = new Date().toISOString();
   db.prepare(
@@ -156,7 +156,7 @@ export function updateSongAnalysis(
       analysis_error = ?,
       analyzed_at = ?
     WHERE id = ?
-  `
+  `,
   ).run(
     data.key_camelot ?? null,
     data.key_name ?? null,
@@ -166,7 +166,7 @@ export function updateSongAnalysis(
     data.analysis_status,
     data.analysis_error ?? null,
     now,
-    id
+    id,
   );
   return getSong(id);
 }
@@ -178,28 +178,28 @@ export function getPendingSongs(): Song[] {
 // ── Playlists ──
 
 export function listPlaylists(): Playlist[] {
-  return db.prepare("SELECT * FROM playlists ORDER BY created_at DESC").all() as Playlist[];
+  return db.prepare('SELECT * FROM playlists ORDER BY created_at DESC').all() as Playlist[];
 }
 
 export function createPlaylist(name: string): Playlist {
   const id = uuid();
   const now = new Date().toISOString();
-  db.prepare("INSERT INTO playlists (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)").run(
+  db.prepare('INSERT INTO playlists (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)').run(
     id,
     name,
     now,
-    now
+    now,
   );
   return { id, name, created_at: now, updated_at: now };
 }
 
 export function renamePlaylist(id: string, name: string): void {
   const now = new Date().toISOString();
-  db.prepare("UPDATE playlists SET name = ?, updated_at = ? WHERE id = ?").run(name, now, id);
+  db.prepare('UPDATE playlists SET name = ?, updated_at = ? WHERE id = ?').run(name, now, id);
 }
 
 export function deletePlaylist(id: string): void {
-  db.prepare("DELETE FROM playlists WHERE id = ?").run(id);
+  db.prepare('DELETE FROM playlists WHERE id = ?').run(id);
 }
 
 // ── Playlist Songs ──
@@ -212,7 +212,7 @@ export function getPlaylistSongs(playlistId: string): PlaylistSong[] {
     JOIN playlist_songs ps ON ps.song_id = s.id
     WHERE ps.playlist_id = ?
     ORDER BY ps.position ASC
-  `
+  `,
     )
     .all(playlistId) as PlaylistSong[];
 }
@@ -220,30 +220,30 @@ export function getPlaylistSongs(playlistId: string): PlaylistSong[] {
 export function addSongToPlaylist(playlistId: string, songId: string): void {
   const maxPos = db
     .prepare(
-      "SELECT COALESCE(MAX(position), -1) as max_pos FROM playlist_songs WHERE playlist_id = ?"
+      'SELECT COALESCE(MAX(position), -1) as max_pos FROM playlist_songs WHERE playlist_id = ?',
     )
     .get(playlistId) as { max_pos: number };
 
   db.prepare(
-    "INSERT OR IGNORE INTO playlist_songs (playlist_id, song_id, position) VALUES (?, ?, ?)"
+    'INSERT OR IGNORE INTO playlist_songs (playlist_id, song_id, position) VALUES (?, ?, ?)',
   ).run(playlistId, songId, maxPos.max_pos + 1);
 
   const now = new Date().toISOString();
-  db.prepare("UPDATE playlists SET updated_at = ? WHERE id = ?").run(now, playlistId);
+  db.prepare('UPDATE playlists SET updated_at = ? WHERE id = ?').run(now, playlistId);
 }
 
 export function removeSongFromPlaylist(playlistId: string, songId: string): void {
-  db.prepare("DELETE FROM playlist_songs WHERE playlist_id = ? AND song_id = ?").run(
+  db.prepare('DELETE FROM playlist_songs WHERE playlist_id = ? AND song_id = ?').run(
     playlistId,
-    songId
+    songId,
   );
   const now = new Date().toISOString();
-  db.prepare("UPDATE playlists SET updated_at = ? WHERE id = ?").run(now, playlistId);
+  db.prepare('UPDATE playlists SET updated_at = ? WHERE id = ?').run(now, playlistId);
 }
 
 export function reorderPlaylist(playlistId: string, songIds: string[]): void {
   const update = db.prepare(
-    "UPDATE playlist_songs SET position = ? WHERE playlist_id = ? AND song_id = ?"
+    'UPDATE playlist_songs SET position = ? WHERE playlist_id = ? AND song_id = ?',
   );
   const reorder = db.transaction((ids: string[]) => {
     ids.forEach((songId, index) => {
@@ -253,5 +253,5 @@ export function reorderPlaylist(playlistId: string, songIds: string[]): void {
   reorder(songIds);
 
   const now = new Date().toISOString();
-  db.prepare("UPDATE playlists SET updated_at = ? WHERE id = ?").run(now, playlistId);
+  db.prepare('UPDATE playlists SET updated_at = ? WHERE id = ?').run(now, playlistId);
 }

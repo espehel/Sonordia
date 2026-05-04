@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, userEvent, waitFor } from "storybook/test";
-import { TrashIcon } from "lucide-react";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, fn, userEvent, waitFor } from 'storybook/test';
+import { TrashIcon } from 'lucide-react';
 
 import {
   AlertDialog,
@@ -13,14 +13,14 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "./alert-dialog";
-import { Button } from "../button/button";
+} from './alert-dialog';
+import { Button } from '../button/button';
 
 const meta = {
-  title: "Components/AlertDialog",
+  title: 'Components/AlertDialog',
   component: AlertDialog,
-  tags: ["autodocs"],
-  parameters: { layout: "centered" },
+  tags: ['autodocs'],
+  parameters: { layout: 'centered' },
 } satisfies Meta<typeof AlertDialog>;
 
 export default meta;
@@ -36,8 +36,8 @@ export const Default: Story = {
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete your account and remove
-            your data from our servers.
+            This action cannot be undone. This will permanently delete your account and remove your
+            data from our servers.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -119,19 +119,19 @@ export const ConfirmsAction: Story = {
     );
   },
   play: async ({ canvas, args }) => {
-    await userEvent.click(canvas.getByRole("button", { name: "Delete" }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Delete' }));
     const dialog = await waitFor(() =>
-      document.querySelector('[data-slot="alert-dialog-content"]')
+      document.querySelector('[data-slot="alert-dialog-content"]'),
     );
     await expect(dialog).toBeTruthy();
     await expect(args.onOpenChange).toHaveBeenLastCalledWith(true);
 
     const confirm = await waitFor(() =>
-      document.querySelector('[data-slot="alert-dialog-action"]')
+      document.querySelector('[data-slot="alert-dialog-action"]'),
     );
     await userEvent.click(confirm as HTMLElement);
     await waitFor(() =>
-      expect(document.querySelector('[data-slot="alert-dialog-content"]')).toBeNull()
+      expect(document.querySelector('[data-slot="alert-dialog-content"]')).toBeNull(),
     );
   },
 };

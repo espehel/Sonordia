@@ -1,16 +1,16 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, userEvent } from "storybook/test";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, userEvent } from 'storybook/test';
 
-import { Label } from "./label";
-import { Checkbox } from "../checkbox/checkbox";
-import { Input } from "../input/input";
+import { Label } from './label';
+import { Checkbox } from '../checkbox/checkbox';
+import { Input } from '../input/input';
 
 const meta = {
-  title: "Components/Label",
+  title: 'Components/Label',
   component: Label,
-  tags: ["autodocs"],
-  parameters: { layout: "centered" },
-  args: { children: "Email address" },
+  tags: ['autodocs'],
+  parameters: { layout: 'centered' },
+  args: { children: 'Email address' },
 } satisfies Meta<typeof Label>;
 
 export default meta;
@@ -46,8 +46,8 @@ export const FocusesAssociatedInput: Story = {
     </div>
   ),
   play: async ({ canvas }) => {
-    const label = canvas.getByText("Username");
-    const input = canvas.getByLabelText("Username");
+    const label = canvas.getByText('Username');
+    const input = canvas.getByLabelText('Username');
     await userEvent.click(label);
     await expect(input).toHaveFocus();
   },

@@ -1,5 +1,5 @@
-import { Button } from "@sonordia/ui/button";
-import type { VizLayer, VizSettings } from "../hooks/useVizSettings";
+import { Button } from '@sonordia/ui/button';
+import type { VizLayer, VizSettings } from '../hooks/useVizSettings';
 
 interface Props {
   settings: VizSettings;
@@ -7,12 +7,12 @@ interface Props {
 }
 
 const LAYERS: { key: VizLayer; label: string }[] = [
-  { key: "waveform", label: "Wave" },
-  { key: "ruler", label: "Ruler" },
-  { key: "beats", label: "Beats" },
-  { key: "rms", label: "RMS" },
-  { key: "chroma", label: "Chroma" },
-  { key: "keytrack", label: "Key" },
+  { key: 'waveform', label: 'Wave' },
+  { key: 'ruler', label: 'Ruler' },
+  { key: 'beats', label: 'Beats' },
+  { key: 'rms', label: 'RMS' },
+  { key: 'chroma', label: 'Chroma' },
+  { key: 'keytrack', label: 'Key' },
 ];
 
 export function VizToolbar({ settings, onToggle }: Props) {
@@ -23,7 +23,7 @@ export function VizToolbar({ settings, onToggle }: Props) {
         return (
           <Button
             key={key}
-            variant={active ? "default" : "outline"}
+            variant={active ? 'default' : 'outline'}
             size="xs"
             onClick={() => onToggle(key)}
             className="rounded-full font-semibold"

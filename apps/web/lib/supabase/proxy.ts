@@ -1,12 +1,12 @@
-import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
-import { hasEnvVars } from "../utils";
+import { createServerClient } from '@supabase/ssr';
+import { NextResponse, type NextRequest } from 'next/server';
+import { hasEnvVars } from '../utils';
 
 // Default-deny: every route requires a session unless it's listed here.
 // Add a new public page in one place — extend PUBLIC_PATHS for an exact match
 // or PUBLIC_PREFIXES for a whole subtree (e.g. /auth/*).
-const PUBLIC_PATHS = new Set<string>(["/", "/download"]);
-const PUBLIC_PREFIXES = ["/auth"] as const;
+const PUBLIC_PATHS = new Set<string>(['/', '/download']);
+const PUBLIC_PREFIXES = ['/auth'] as const;
 
 function isPublicRoute(pathname: string): boolean {
   if (PUBLIC_PATHS.has(pathname)) return true;
@@ -35,9 +35,7 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value),
-          );
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({
             request,
           });
@@ -61,7 +59,7 @@ export async function updateSession(request: NextRequest) {
   if (!user && !isPublicRoute(request.nextUrl.pathname)) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
-    url.pathname = "/auth/login";
+    url.pathname = '/auth/login';
     return NextResponse.redirect(url);
   }
 

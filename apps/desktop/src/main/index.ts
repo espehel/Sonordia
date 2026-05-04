@@ -1,12 +1,12 @@
-import { app, BrowserWindow, dialog, protocol, shell } from "electron";
-import { join, extname } from "path";
-import { createReadStream, statSync } from "fs";
-import { Readable } from "stream";
-import type { ReadableStream as NodeReadableStream } from "stream/web";
-import { initDb, getSong } from "./db";
-import { PythonBridge } from "./python-bridge";
-import { registerIpc } from "./ipc";
-import { VizBackfill } from "./viz-backfill";
+import { app, BrowserWindow, dialog, protocol, shell } from 'electron';
+import { join, extname } from 'path';
+import { createReadStream, statSync } from 'fs';
+import { Readable } from 'stream';
+import type { ReadableStream as NodeReadableStream } from 'stream/web';
+import { initDb, getSong } from './db';
+import { PythonBridge } from './python-bridge';
+import { registerIpc } from './ipc';
+import { VizBackfill } from './viz-backfill';
 
 const isDev = !app.isPackaged;
 const bridge = new PythonBridge();
@@ -20,7 +20,7 @@ if (process.env.ENABLE_PLAYWRIGHT_DEBUG === '1') {
 // secure scheme so <audio src="audio://..."> works under sandbox/CORS rules.
 protocol.registerSchemesAsPrivileged([
   {
-    scheme: "audio",
+    scheme: 'audio',
     privileges: {
       standard: true,
       secure: true,
@@ -41,38 +41,38 @@ function createWindow(): void {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
-      preload: join(__dirname, "../preload/index.js"),
+      preload: join(__dirname, '../preload/index.js'),
     },
   });
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
-    return { action: "deny" };
+    return { action: 'deny' };
   });
 
   if (isDev && process.env.ELECTRON_RENDERER_URL) {
     mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL);
   } else {
-    mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
+    mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
 }
 
 const AUDIO_MIME: Record<string, string> = {
-  ".mp3": "audio/mpeg",
-  ".wav": "audio/wav",
-  ".flac": "audio/flac",
-  ".ogg": "audio/ogg",
-  ".oga": "audio/ogg",
-  ".m4a": "audio/mp4",
-  ".aac": "audio/aac",
+  '.mp3': 'audio/mpeg',
+  '.wav': 'audio/wav',
+  '.flac': 'audio/flac',
+  '.ogg': 'audio/ogg',
+  '.oga': 'audio/ogg',
+  '.m4a': 'audio/mp4',
+  '.aac': 'audio/aac',
 };
 
 function registerAudioProtocol(): void {
-  protocol.handle("audio", async (request) => {
+  protocol.handle('audio', async (request) => {
     let songId: string;
     try {
       const url = new URL(request.url);
-      songId = decodeURIComponent(url.hostname || url.pathname.replace(/^\/+/, ""));
+      songId = decodeURIComponent(url.hostname || url.pathname.replace(/^\/+/, ''));
     } catch {
       return new Response(null, { status: 400 });
     }
@@ -87,9 +87,9 @@ function registerAudioProtocol(): void {
       return new Response(null, { status: 404 });
     }
 
-    const mime = AUDIO_MIME[extname(song.file_path).toLowerCase()] ?? "application/octet-stream";
+    const mime = AUDIO_MIME[extname(song.file_path).toLowerCase()] ?? 'application/octet-stream';
     const total = stat.size;
-    const range = request.headers.get("range");
+    const range = request.headers.get('range');
 
     if (range) {
       const match = /^bytes=(\d+)-(\d*)$/.exec(range);
@@ -99,7 +99,7 @@ function registerAudioProtocol(): void {
         if (start >= total || end < start) {
           return new Response(null, {
             status: 416,
-            headers: { "Content-Range": `bytes */${total}` },
+            headers: { 'Content-Range': `bytes */${total}` },
           });
         }
         const node = createReadStream(song.file_path, { start, end });
@@ -107,11 +107,11 @@ function registerAudioProtocol(): void {
         return new Response(web as unknown as BodyInit, {
           status: 206,
           headers: {
-            "Content-Type": mime,
-            "Content-Length": String(end - start + 1),
-            "Content-Range": `bytes ${start}-${end}/${total}`,
-            "Accept-Ranges": "bytes",
-            "Cache-Control": "no-cache",
+            'Content-Type': mime,
+            'Content-Length': String(end - start + 1),
+            'Content-Range': `bytes ${start}-${end}/${total}`,
+            'Accept-Ranges': 'bytes',
+            'Cache-Control': 'no-cache',
           },
         });
       }
@@ -122,10 +122,10 @@ function registerAudioProtocol(): void {
     return new Response(web as unknown as BodyInit, {
       status: 200,
       headers: {
-        "Content-Type": mime,
-        "Content-Length": String(total),
-        "Accept-Ranges": "bytes",
-        "Cache-Control": "no-cache",
+        'Content-Type': mime,
+        'Content-Length': String(total),
+        'Accept-Ranges': 'bytes',
+        'Cache-Control': 'no-cache',
       },
     });
   });
@@ -139,34 +139,34 @@ app.whenReady().then(() => {
   bridge
     .waitReady()
     .then(() => {
-      console.log("[main] Python bridge ready");
+      console.log('[main] Python bridge ready');
       void backfill.start();
     })
     .catch((err) => {
-      console.error("[main] Python bridge failed to start:", err);
+      console.error('[main] Python bridge failed to start:', err);
       if (app.isPackaged) {
         dialog.showErrorBox(
-          "Analysis Engine Error",
-          `The audio analysis engine failed to start.\n\n${err.message}\n\nSong analysis will not be available until the app is restarted.`
+          'Analysis Engine Error',
+          `The audio analysis engine failed to start.\n\n${err.message}\n\nSong analysis will not be available until the app is restarted.`,
         );
       }
     });
   createWindow();
 
-  app.on("activate", () => {
+  app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
     }
   });
 });
 
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
     app.quit();
   }
 });
 
-app.on("will-quit", () => {
+app.on('will-quit', () => {
   backfill.cancel();
   bridge.kill();
 });

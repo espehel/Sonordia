@@ -12,4 +12,4 @@ export type {
   VizPayload,
   VizGetResult,
   BackfillProgress,
-} from "../preload/api";
+} from '../preload/api';

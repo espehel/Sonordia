@@ -1,9 +1,9 @@
-import { spawn, ChildProcess } from "child_process";
-import { app } from "electron";
-import { join } from "path";
-import { existsSync, chmodSync } from "fs";
-import { EventEmitter } from "events";
-import { v4 as uuid } from "uuid";
+import { spawn, ChildProcess } from 'child_process';
+import { app } from 'electron';
+import { join } from 'path';
+import { existsSync, chmodSync } from 'fs';
+import { EventEmitter } from 'events';
+import { v4 as uuid } from 'uuid';
 
 export interface AnalysisResult {
   key: { camelot: string; key_name: string; key_id: number };
@@ -17,7 +17,7 @@ export interface ComputeVizResult {
 
 interface BridgeResponse {
   id: string;
-  status: "ok" | "error";
+  status: 'ok' | 'error';
   error?: string;
   [key: string]: unknown;
 }
@@ -36,7 +36,7 @@ const COMPUTE_VIZ_TIMEOUT_MS = 240_000;
 export class PythonBridge extends EventEmitter {
   private process: ChildProcess | null = null;
   private pending = new Map<string, PendingRequest>();
-  private buffer = "";
+  private buffer = '';
   private ready = false;
   private readyPromise!: Promise<void>;
   private resolveReady!: () => void;
@@ -78,18 +78,18 @@ export class PythonBridge extends EventEmitter {
     const env: NodeJS.ProcessEnv = { ...process.env };
 
     if (isDev) {
-      const repoRoot = join(__dirname, "../../../..");
-      command = "uv";
-      args = ["run", "python", "apps/desktop/bridge/analyzer.py"];
+      const repoRoot = join(__dirname, '../../../..');
+      command = 'uv';
+      args = ['run', 'python', 'apps/desktop/bridge/analyzer.py'];
       cwd = repoRoot;
     } else {
-      const binaryName = process.platform === "win32" ? "analyzer.exe" : "analyzer";
-      const resourcePath = join(process.resourcesPath, "bridge", binaryName);
+      const binaryName = process.platform === 'win32' ? 'analyzer.exe' : 'analyzer';
+      const resourcePath = join(process.resourcesPath, 'bridge', binaryName);
 
       if (!existsSync(resourcePath)) {
         const err = new Error(`Analyzer binary not found at: ${resourcePath}`);
         this.rejectReady(err);
-        this.emit("status", { status: "error", error: err.message });
+        this.emit('status', { status: 'error', error: err.message });
         return;
       }
 
@@ -102,37 +102,37 @@ export class PythonBridge extends EventEmitter {
       command = resourcePath;
       args = [];
       cwd = undefined;
-      env.MODEL_PATH = join(process.resourcesPath, "checkpoints", "keynet.pt");
+      env.MODEL_PATH = join(process.resourcesPath, 'checkpoints', 'keynet.pt');
     }
 
     this.process = spawn(command, args, {
       cwd,
-      stdio: ["pipe", "pipe", "pipe"],
+      stdio: ['pipe', 'pipe', 'pipe'],
       env,
     });
 
-    this.process.stdout!.on("data", (chunk: Buffer) => {
+    this.process.stdout!.on('data', (chunk: Buffer) => {
       this.buffer += chunk.toString();
-      const lines = this.buffer.split("\n");
+      const lines = this.buffer.split('\n');
       this.buffer = lines.pop()!;
       for (const line of lines) {
         if (line.trim()) this.handleLine(line.trim());
       }
     });
 
-    this.process.stderr!.on("data", (chunk: Buffer) => {
-      console.error("[bridge:stderr]", chunk.toString());
+    this.process.stderr!.on('data', (chunk: Buffer) => {
+      console.error('[bridge:stderr]', chunk.toString());
     });
 
-    this.process.on("exit", (code) => {
+    this.process.on('exit', (code) => {
       console.log(`[bridge] process exited with code ${code}`);
       const wasReady = this.ready;
       this.ready = false;
       this.process = null;
-      this.buffer = "";
+      this.buffer = '';
 
       for (const [, req] of this.pending) {
-        req.reject(new Error("Python bridge process exited"));
+        req.reject(new Error('Python bridge process exited'));
       }
       this.pending.clear();
 
@@ -141,14 +141,14 @@ export class PythonBridge extends EventEmitter {
       }
 
       if (!this.killed) {
-        this.emit("status", { status: "exited", code });
+        this.emit('status', { status: 'exited', code });
         this.tryRestart();
       }
     });
 
-    this.process.on("error", (err) => {
-      console.error("[bridge] spawn error:", err);
-      this.emit("status", { status: "error", error: err.message });
+    this.process.on('error', (err) => {
+      console.error('[bridge] spawn error:', err);
+      this.emit('status', { status: 'error', error: err.message });
       this.rejectReady(err);
     });
   }
@@ -157,14 +157,14 @@ export class PythonBridge extends EventEmitter {
     if (this.killed || this.restartCount >= MAX_RESTARTS) {
       if (this.restartCount >= MAX_RESTARTS) {
         console.error(`[bridge] max restarts (${MAX_RESTARTS}) reached, giving up`);
-        this.emit("status", { status: "error", error: "Bridge crashed too many times" });
+        this.emit('status', { status: 'error', error: 'Bridge crashed too many times' });
       }
       return;
     }
 
     this.restartCount++;
     console.log(`[bridge] restarting (attempt ${this.restartCount}/${MAX_RESTARTS})...`);
-    this.emit("status", { status: "restarting" });
+    this.emit('status', { status: 'restarting' });
     this.resetReadyPromise();
 
     setTimeout(() => {
@@ -179,34 +179,34 @@ export class PythonBridge extends EventEmitter {
     try {
       msg = JSON.parse(line);
     } catch {
-      console.error("[bridge] invalid JSON:", line);
+      console.error('[bridge] invalid JSON:', line);
       return;
     }
 
-    if (msg.id === "__ready__") {
-      if (msg.status === "ok") {
+    if (msg.id === '__ready__') {
+      if (msg.status === 'ok') {
         this.ready = true;
         this.restartCount = 0;
-        this.emit("status", { status: "ready" });
+        this.emit('status', { status: 'ready' });
         this.resolveReady();
       } else {
-        this.rejectReady(new Error(msg.error ?? "Bridge startup failed"));
-        this.emit("status", { status: "error", error: msg.error });
+        this.rejectReady(new Error(msg.error ?? 'Bridge startup failed'));
+        this.emit('status', { status: 'error', error: msg.error });
       }
       return;
     }
 
     const pending = this.pending.get(msg.id);
     if (!pending) {
-      console.warn("[bridge] response for unknown request:", msg.id);
+      console.warn('[bridge] response for unknown request:', msg.id);
       return;
     }
     this.pending.delete(msg.id);
 
-    if (msg.status === "ok") {
+    if (msg.status === 'ok') {
       pending.resolve(msg);
     } else {
-      pending.reject(new Error(msg.error ?? "Unknown bridge error"));
+      pending.reject(new Error(msg.error ?? 'Unknown bridge error'));
     }
   }
 
@@ -214,18 +214,18 @@ export class PythonBridge extends EventEmitter {
     return Promise.race([
       this.readyPromise,
       new Promise<void>((_, reject) =>
-        setTimeout(() => reject(new Error("Bridge startup timed out")), timeoutMs)
+        setTimeout(() => reject(new Error('Bridge startup timed out')), timeoutMs),
       ),
     ]);
   }
 
   private send<T>(payload: object, timeoutMs: number, map: (msg: BridgeResponse) => T): Promise<T> {
     if (!this.process || !this.ready) {
-      return Promise.reject(new Error("Python bridge is not ready"));
+      return Promise.reject(new Error('Python bridge is not ready'));
     }
 
     const id = uuid();
-    const request = JSON.stringify({ id, ...payload }) + "\n";
+    const request = JSON.stringify({ id, ...payload }) + '\n';
 
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
@@ -259,9 +259,9 @@ export class PythonBridge extends EventEmitter {
   }
 
   async analyze(filePath: string, timeoutMs = ANALYZE_TIMEOUT_MS): Promise<AnalysisResult> {
-    return this.send({ command: "analyze", path: filePath }, timeoutMs, (msg) => ({
-      key: msg.key as AnalysisResult["key"],
-      bpm: msg.bpm as AnalysisResult["bpm"],
+    return this.send({ command: 'analyze', path: filePath }, timeoutMs, (msg) => ({
+      key: msg.key as AnalysisResult['key'],
+      bpm: msg.bpm as AnalysisResult['bpm'],
       beats: (msg.beats as number[]) ?? [],
     }));
   }
@@ -270,12 +270,12 @@ export class PythonBridge extends EventEmitter {
     filePath: string,
     outDir: string,
     features: string[],
-    timeoutMs = COMPUTE_VIZ_TIMEOUT_MS
+    timeoutMs = COMPUTE_VIZ_TIMEOUT_MS,
   ): Promise<ComputeVizResult> {
     return this.send(
-      { command: "compute-viz", path: filePath, out_dir: outDir, features },
+      { command: 'compute-viz', path: filePath, out_dir: outDir, features },
       timeoutMs,
-      (msg) => ({ written: (msg.written as string[]) ?? [] })
+      (msg) => ({ written: (msg.written as string[]) ?? [] }),
     );
   }
 

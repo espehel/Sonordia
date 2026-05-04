@@ -1,6 +1,6 @@
-import { useRef } from "react";
-import type { BeatsViz } from "../../types";
-import { useCanvasDraw } from "./useCanvas";
+import { useRef } from 'react';
+import type { BeatsViz } from '../../types';
+import { useCanvasDraw } from './useCanvas';
 
 interface Props {
   beats: BeatsViz | undefined;
@@ -26,7 +26,7 @@ export function BeatGridLayer({ beats, duration, width, height }: Props) {
         beats.beats.forEach((t, i) => {
           if (i % 4 !== 0) return;
           const x = (t / duration) * w;
-          ctx.fillStyle = "rgba(0,0,0,0.18)";
+          ctx.fillStyle = 'rgba(0,0,0,0.18)';
           ctx.fillRect(x, 0, 1, h);
         });
         return;
@@ -36,21 +36,21 @@ export function BeatGridLayer({ beats, duration, width, height }: Props) {
         const x = (t / duration) * w;
         const isDownbeat = i % 4 === 0;
         if (isDownbeat) {
-          ctx.fillStyle = "rgba(0,0,0,0.22)";
+          ctx.fillStyle = 'rgba(0,0,0,0.22)';
           ctx.fillRect(x, 0, 1, h);
         } else {
-          ctx.fillStyle = "rgba(0,0,0,0.10)";
+          ctx.fillStyle = 'rgba(0,0,0,0.10)';
           ctx.fillRect(x, 0, 1, Math.min(8, h));
         }
       });
     },
-    [beats, duration]
+    [beats, duration],
   );
 
   return (
     <canvas
       ref={canvasRef}
-      style={{ position: "absolute", left: 0, top: 0, pointerEvents: "none" }}
+      style={{ position: 'absolute', left: 0, top: 0, pointerEvents: 'none' }}
     />
   );
 }

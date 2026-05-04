@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import type { BackfillProgress } from "../types";
+import { useEffect, useState } from 'react';
+import type { BackfillProgress } from '../types';
 
-const initial: BackfillProgress = { state: "idle", total: 0, completed: 0 };
+const initial: BackfillProgress = { state: 'idle', total: 0, completed: 0 };
 
 export function useBackfill(): BackfillProgress {
   const [progress, setProgress] = useState<BackfillProgress>(initial);

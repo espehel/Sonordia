@@ -10,7 +10,7 @@ export interface Song {
   key_id: number | null;
   bpm: number | null;
   bpm_confidence: number | null;
-  analysis_status: "pending" | "analyzing" | "done" | "error";
+  analysis_status: 'pending' | 'analyzing' | 'done' | 'error';
   analysis_error: string | null;
   added_at: string;
   analyzed_at: string | null;
@@ -79,7 +79,7 @@ export interface VizGetResult {
 }
 
 export interface BackfillProgress {
-  state: "idle" | "running" | "done";
+  state: 'idle' | 'running' | 'done';
   total: number;
   completed: number;
   currentSongId?: string;

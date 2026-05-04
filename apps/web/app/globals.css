@@ -1,4 +1,4 @@
-@import "@sonordia/ui/styles.css";
+@import '@sonordia/ui/styles.css';
 
 /* Tailwind v4 auto-scans the project, but @sonordia/ui's `@source` is
    relative to its own CSS file (so it only catches its own components).

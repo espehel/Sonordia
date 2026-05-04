@@ -1,6 +1,6 @@
-import { useRef } from "react";
-import type { RmsViz } from "../../types";
-import { useCanvasDraw } from "./useCanvas";
+import { useRef } from 'react';
+import type { RmsViz } from '../../types';
+import { useCanvasDraw } from './useCanvas';
 
 interface Props {
   data: RmsViz | undefined;
@@ -29,7 +29,7 @@ export function RmsLayer({ data, width, height }: Props) {
       }
       ctx.lineTo(w, h);
       ctx.closePath();
-      ctx.fillStyle = "rgba(255, 138, 0, 0.18)";
+      ctx.fillStyle = 'rgba(255, 138, 0, 0.18)';
       ctx.fill();
 
       ctx.beginPath();
@@ -40,17 +40,17 @@ export function RmsLayer({ data, width, height }: Props) {
         if (x === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
-      ctx.strokeStyle = "rgba(204, 102, 0, 0.85)";
+      ctx.strokeStyle = 'rgba(204, 102, 0, 0.85)';
       ctx.lineWidth = 1.25;
       ctx.stroke();
     },
-    [data]
+    [data],
   );
 
   return (
     <canvas
       ref={canvasRef}
-      style={{ position: "absolute", left: 0, top: 0, pointerEvents: "none" }}
+      style={{ position: 'absolute', left: 0, top: 0, pointerEvents: 'none' }}
     />
   );
 }

@@ -1,13 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { toast } from "@sonordia/ui/sonner";
-import type { Song } from "../types";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { toast } from '@sonordia/ui/sonner';
+import type { Song } from '../types';
 
 export function useSongs() {
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   // Track previous analysis_status per song so we only toast on transitions into error,
   // not on every push (the status field can be re-emitted multiple times during analysis).
-  const prevStatus = useRef<Map<string, Song["analysis_status"]>>(new Map());
+  const prevStatus = useRef<Map<string, Song['analysis_status']>>(new Map());
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -24,11 +24,11 @@ export function useSongs() {
   useEffect(() => {
     const unsub = window.api.onSongUpdated((updated: Song) => {
       const prev = prevStatus.current.get(updated.id);
-      if (prev !== "error" && updated.analysis_status === "error") {
-        toast.error(`Analysis failed: ${updated.title ?? "song"}`, {
+      if (prev !== 'error' && updated.analysis_status === 'error') {
+        toast.error(`Analysis failed: ${updated.title ?? 'song'}`, {
           description: updated.analysis_error ?? undefined,
           action: {
-            label: "Retry",
+            label: 'Retry',
             onClick: () => window.api.songs.analyze(updated.id),
           },
         });
@@ -44,7 +44,7 @@ export function useSongs() {
     if (added.length > 0) {
       setSongs((prev) => [...added, ...prev]);
       for (const s of added) prevStatus.current.set(s.id, s.analysis_status);
-      toast.success(`Imported ${added.length} ${added.length === 1 ? "file" : "files"}`);
+      toast.success(`Imported ${added.length} ${added.length === 1 ? 'file' : 'files'}`);
     }
     return added;
   }, []);

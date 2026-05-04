@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { useState } from 'react';
+import { MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,17 +9,17 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@sonordia/ui/alert-dialog";
-import { Button } from "@sonordia/ui/button";
+} from '@sonordia/ui/alert-dialog';
+import { Button } from '@sonordia/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@sonordia/ui/dropdown-menu";
-import { Input } from "@sonordia/ui/input";
-import { cn } from "@sonordia/ui/utils";
-import type { Playlist } from "../types";
+} from '@sonordia/ui/dropdown-menu';
+import { Input } from '@sonordia/ui/input';
+import { cn } from '@sonordia/ui/utils';
+import type { Playlist } from '../types';
 
 interface SidebarProps {
   playlists: Playlist[];
@@ -38,16 +38,16 @@ export function Sidebar({
   onRename,
   onDelete,
 }: SidebarProps) {
-  const [newName, setNewName] = useState("");
+  const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editName, setEditName] = useState("");
+  const [editName, setEditName] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<Playlist | null>(null);
 
   const handleCreate = () => {
     const name = newName.trim();
     if (!name) return;
     onCreate(name);
-    setNewName("");
+    setNewName('');
   };
 
   const startRename = (playlist: Playlist) => {
@@ -68,8 +68,8 @@ export function Sidebar({
         type="button"
         onClick={() => onSelect(null)}
         className={cn(
-          "rounded-md px-3 py-2 text-left text-sm font-semibold",
-          selectedId === null ? "bg-muted" : "hover:bg-muted/50"
+          'rounded-md px-3 py-2 text-left text-sm font-semibold',
+          selectedId === null ? 'bg-muted' : 'hover:bg-muted/50',
         )}
       >
         All Songs
@@ -84,8 +84,8 @@ export function Sidebar({
           key={pl.id}
           onClick={() => onSelect(pl.id)}
           className={cn(
-            "group flex cursor-pointer items-center gap-1 rounded-md px-3 py-1.5 text-sm",
-            selectedId === pl.id ? "bg-muted" : "hover:bg-muted/50"
+            'group flex cursor-pointer items-center gap-1 rounded-md px-3 py-1.5 text-sm',
+            selectedId === pl.id ? 'bg-muted' : 'hover:bg-muted/50',
           )}
         >
           {editingId === pl.id ? (
@@ -93,7 +93,7 @@ export function Sidebar({
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
               onBlur={commitRename}
-              onKeyDown={(e) => e.key === "Enter" && commitRename()}
+              onKeyDown={(e) => e.key === 'Enter' && commitRename()}
               autoFocus
               onClick={(e) => e.stopPropagation()}
               className="h-6 px-1 text-sm"
@@ -133,7 +133,7 @@ export function Sidebar({
         <Input
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+          onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
           placeholder="New playlist..."
           className="h-8 text-xs"
         />
@@ -155,7 +155,7 @@ export function Sidebar({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete playlist?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete{" "}
+              This will permanently delete{' '}
               <span className="font-semibold">{deleteTarget?.name}</span>. The songs themselves will
               not be removed.
             </AlertDialogDescription>

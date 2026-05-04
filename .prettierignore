@@ -9,3 +9,4 @@ apps/desktop/bridge
 *.lock
 package-lock.json
 uv.lock
+.next/

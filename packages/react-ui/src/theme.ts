@@ -1,27 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
-export type Theme = "light" | "dark" | "system";
-export type ResolvedTheme = "light" | "dark";
+export type Theme = 'light' | 'dark' | 'system';
+export type ResolvedTheme = 'light' | 'dark';
 
-const STORAGE_KEY = "sonordia-theme";
+const STORAGE_KEY = 'sonordia-theme';
 
 function readStored(): Theme {
-  if (typeof window === "undefined") return "system";
+  if (typeof window === 'undefined') return 'system';
   const v = window.localStorage.getItem(STORAGE_KEY);
-  return v === "light" || v === "dark" ? v : "system";
+  return v === 'light' || v === 'dark' ? v : 'system';
 }
 
 function systemPrefersDark(): boolean {
-  return typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  return typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
 }
 
 function resolve(theme: Theme): ResolvedTheme {
-  if (theme === "system") return systemPrefersDark() ? "dark" : "light";
+  if (theme === 'system') return systemPrefersDark() ? 'dark' : 'light';
   return theme;
 }
 
 function apply(resolved: ResolvedTheme) {
-  document.documentElement.classList.toggle("dark", resolved === "dark");
+  document.documentElement.classList.toggle('dark', resolved === 'dark');
 }
 
 export function useTheme() {
@@ -33,20 +33,20 @@ export function useTheme() {
     setResolved(next);
     apply(next);
 
-    if (theme !== "system") return;
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    if (theme !== 'system') return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
     const onChange = () => {
-      const r: ResolvedTheme = mq.matches ? "dark" : "light";
+      const r: ResolvedTheme = mq.matches ? 'dark' : 'light';
       setResolved(r);
       apply(r);
     };
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
   }, [theme]);
 
   const setTheme = (next: Theme) => {
     setThemeState(next);
-    if (next === "system") window.localStorage.removeItem(STORAGE_KEY);
+    if (next === 'system') window.localStorage.removeItem(STORAGE_KEY);
     else window.localStorage.setItem(STORAGE_KEY, next);
   };
 

@@ -1,4 +1,4 @@
-import type { BeatsViz } from "../../types";
+import type { BeatsViz } from '../../types';
 
 interface Props {
   duration: number;
@@ -10,7 +10,7 @@ interface Props {
 function fmtTime(sec: number): string {
   const m = Math.floor(sec / 60);
   const s = Math.floor(sec % 60);
-  return `${m}:${s.toString().padStart(2, "0")}`;
+  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 function pickSecondsStep(duration: number, width: number): number {
@@ -35,7 +35,7 @@ export function RulerLayer({ duration, beats, width, height }: Props) {
       const isDownbeat = i % 4 === 0;
       ticks.push({
         x,
-        label: isDownbeat ? `${Math.floor(i / 4) + 1}` : "",
+        label: isDownbeat ? `${Math.floor(i / 4) + 1}` : '',
         major: isDownbeat,
       });
     });
@@ -50,29 +50,29 @@ export function RulerLayer({ duration, beats, width, height }: Props) {
   return (
     <div
       style={{
-        position: "relative",
+        position: 'relative',
         width,
         height,
-        background: "#fafafa",
-        borderBottom: "1px solid #eee",
+        background: '#fafafa',
+        borderBottom: '1px solid #eee',
         fontSize: 10,
-        color: "#888",
-        userSelect: "none",
+        color: '#888',
+        userSelect: 'none',
       }}
     >
       {ticks.map((t, i) => (
         <div
           key={i}
           style={{
-            position: "absolute",
+            position: 'absolute',
             left: t.x,
             top: 0,
             bottom: 0,
-            borderLeft: t.major ? "1px solid #bbb" : "1px solid #eee",
+            borderLeft: t.major ? '1px solid #bbb' : '1px solid #eee',
           }}
         >
           {t.label && (
-            <span style={{ position: "absolute", left: 3, top: 2, whiteSpace: "nowrap" }}>
+            <span style={{ position: 'absolute', left: 3, top: 2, whiteSpace: 'nowrap' }}>
               {t.label}
             </span>
           )}

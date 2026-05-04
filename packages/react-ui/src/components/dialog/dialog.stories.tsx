@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, userEvent, waitFor } from "storybook/test";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, fn, userEvent, waitFor } from 'storybook/test';
 
-import { Button } from "../button/button";
+import { Button } from '../button/button';
 import {
   Dialog,
   DialogClose,
@@ -11,14 +11,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "./dialog";
-import { Input } from "../input/input";
+} from './dialog';
+import { Input } from '../input/input';
 
 const meta = {
-  title: "Components/Dialog",
+  title: 'Components/Dialog',
   component: Dialog,
-  tags: ["autodocs"],
-  parameters: { layout: "centered" },
+  tags: ['autodocs'],
+  parameters: { layout: 'centered' },
 } satisfies Meta<typeof Dialog>;
 
 export default meta;
@@ -94,18 +94,16 @@ export const OpensAndCloses: Story = {
     </Dialog>
   ),
   play: async ({ canvas, args }) => {
-    await userEvent.click(canvas.getByRole("button", { name: "Open" }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Open' }));
     const dialog = await waitFor(() => document.querySelector('[data-slot="dialog-content"]'));
     await expect(dialog).toBeTruthy();
     await expect(args.onOpenChange).toHaveBeenLastCalledWith(true);
 
     const cancel = await waitFor(() =>
-      Array.from(document.querySelectorAll("button")).find((b) => b.textContent === "Cancel")
+      Array.from(document.querySelectorAll('button')).find((b) => b.textContent === 'Cancel'),
     );
     await userEvent.click(cancel!);
-    await waitFor(() =>
-      expect(document.querySelector('[data-slot="dialog-content"]')).toBeNull()
-    );
+    await waitFor(() => expect(document.querySelector('[data-slot="dialog-content"]')).toBeNull());
     await expect(args.onOpenChange).toHaveBeenLastCalledWith(false);
   },
 };

@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, userEvent, waitFor } from "storybook/test";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, fn, userEvent, waitFor } from 'storybook/test';
 
 import {
   Select,
@@ -10,13 +10,13 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from "./select";
+} from './select';
 
 const meta = {
-  title: "Components/Select",
+  title: 'Components/Select',
   component: Select,
-  tags: ["autodocs"],
-  parameters: { layout: "centered" },
+  tags: ['autodocs'],
+  parameters: { layout: 'centered' },
 } satisfies Meta<typeof Select>;
 
 export default meta;
@@ -102,13 +102,13 @@ export const SelectsValue: Story = {
     </Select>
   ),
   play: async ({ canvas, args }) => {
-    await userEvent.click(canvas.getByRole("combobox", { name: "Fruit" }));
+    await userEvent.click(canvas.getByRole('combobox', { name: 'Fruit' }));
     const banana = await waitFor(() =>
       Array.from(document.querySelectorAll('[data-slot="select-item"]')).find(
-        (el) => el.textContent === "Banana"
-      )
+        (el) => el.textContent === 'Banana',
+      ),
     );
     await userEvent.click(banana as HTMLElement);
-    await expect(args.onValueChange).toHaveBeenCalledWith("banana");
+    await expect(args.onValueChange).toHaveBeenCalledWith('banana');
   },
 };

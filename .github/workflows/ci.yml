@@ -12,11 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
+      - name: Setup mise
+        uses: jdx/mise-action@v2
 
       # Skip the apps/desktop postinstall (electron-rebuild) — it spawns Electron's
       # binary patcher and isn't useful in CI where we don't run the desktop app.

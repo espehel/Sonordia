@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import {
   Table,
@@ -9,13 +9,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "./table";
+} from './table';
 
 const meta = {
-  title: "Components/Table",
+  title: 'Components/Table',
   component: Table,
-  tags: ["autodocs"],
-  parameters: { layout: "padded" },
+  tags: ['autodocs'],
+  parameters: { layout: 'padded' },
   decorators: [
     (Story) => (
       <div className="w-[640px]">
@@ -29,9 +29,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const invoices = [
-  { id: "INV-001", status: "Paid", method: "Credit card", amount: "$250.00" },
-  { id: "INV-002", status: "Pending", method: "PayPal", amount: "$150.00" },
-  { id: "INV-003", status: "Unpaid", method: "Bank transfer", amount: "$350.00" },
+  { id: 'INV-001', status: 'Paid', method: 'Credit card', amount: '$250.00' },
+  { id: 'INV-002', status: 'Pending', method: 'PayPal', amount: '$150.00' },
+  { id: 'INV-003', status: 'Unpaid', method: 'Bank transfer', amount: '$350.00' },
 ];
 
 export const Default: Story = {

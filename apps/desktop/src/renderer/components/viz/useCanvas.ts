@@ -1,4 +1,4 @@
-import { RefObject, useEffect } from "react";
+import { RefObject, useEffect } from 'react';
 
 type DrawFn = (ctx: CanvasRenderingContext2D, w: number, h: number) => void;
 
@@ -11,7 +11,7 @@ export function useCanvasDraw(
   width: number,
   height: number,
   draw: DrawFn,
-  deps: ReadonlyArray<unknown>
+  deps: ReadonlyArray<unknown>,
 ): void {
   useEffect(() => {
     const canvas = ref.current;
@@ -23,7 +23,7 @@ export function useCanvasDraw(
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, width, height);

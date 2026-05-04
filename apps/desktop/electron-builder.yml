@@ -11,7 +11,7 @@ extraResources:
   - from: bridge/dist/analyzer/
     to: bridge
     filter:
-      - "**/*"
+      - '**/*'
   - from: ../../packages/key-prediction/checkpoints/keynet.pt
     to: checkpoints/keynet.pt
 mac:
