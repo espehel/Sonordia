@@ -15,7 +15,7 @@ import { Sidebar } from './components/Sidebar';
 import { PlaylistView } from './components/PlaylistView';
 import { PlayerPanel } from './components/PlayerPanel';
 
-function App(): JSX.Element {
+function App() {
   const { songs, loading, importFiles, removeSong } = useSongs();
   const { bridgeStatus, analyzeOne, analyzeAll } = useAnalysis();
   const {

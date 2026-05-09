@@ -205,3 +205,6 @@ storybook-static
 
 # Mac
 .DS_Store
+
+# Typescript
+*.tsbuildinfo

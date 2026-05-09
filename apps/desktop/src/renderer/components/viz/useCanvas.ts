@@ -7,7 +7,7 @@ type DrawFn = (ctx: CanvasRenderingContext2D, w: number, h: number) => void;
  * Handles devicePixelRatio scaling so lines stay crisp on retina displays.
  */
 export function useCanvasDraw(
-  ref: RefObject<HTMLCanvasElement>,
+  ref: RefObject<HTMLCanvasElement | null>,
   width: number,
   height: number,
   draw: DrawFn,
