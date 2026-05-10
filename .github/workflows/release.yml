@@ -37,6 +37,14 @@ jobs:
       - name: Install Node deps
         run: npm ci
 
+      - name: Sync desktop version to release tag
+        if: github.event_name == 'release'
+        shell: bash
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          VERSION="${TAG#v}"
+          npm version --no-git-tag-version --workspace=@sonordia/desktop --allow-same-version "$VERSION"
+
       - name: Build Python bridge (PyInstaller)
         run: uv run pyinstaller bridge/analyzer.spec --noconfirm --distpath bridge/dist --workpath bridge/build
         working-directory: apps/desktop
@@ -45,7 +53,16 @@ jobs:
         run: npm run build --workspace=@sonordia/desktop
 
       - name: Package & publish to GitHub release
-        run: npx electron-builder --publish always
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "release" ] && [ "${{ github.event.release.prerelease }}" = "true" ]; then
+            RELEASE_TYPE=prerelease
+          elif [ "${{ github.event_name }}" = "release" ]; then
+            RELEASE_TYPE=release
+          else
+            RELEASE_TYPE=draft
+          fi
+          npx electron-builder --publish always --config.publish.releaseType="$RELEASE_TYPE"
         working-directory: apps/desktop
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
