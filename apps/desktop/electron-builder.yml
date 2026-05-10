@@ -1,5 +1,8 @@
 appId: com.sonordia.desktop
 productName: Sonordia
+# Stable, version-less filenames so the website can link to
+# /releases/latest/download/<asset> without needing to know the version.
+artifactName: ${productName}-${os}-${arch}.${ext}
 directories:
   buildResources: build
   output: dist
