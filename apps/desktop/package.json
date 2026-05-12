@@ -1,6 +1,6 @@
 {
   "name": "@sonordia/desktop",
-  "version": "2026.5.10",
+  "version": "2026.5.12",
   "private": true,
   "description": "Desktop app for musical key and BPM analysis",
   "author": "Sonordia",
