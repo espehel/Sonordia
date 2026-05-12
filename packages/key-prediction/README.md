@@ -2,6 +2,9 @@
 
 CNN-based musical key classification using the architecture from Korzeniowski & Widmer (2018) [\[1\]](#literature). Provides a pre-trained model and utilities for preprocessing, training, evaluation, and prediction using the [Camelot Wheel](https://mixedinkey.com/camelot-wheel/) convention.
 
+## Credit
+This package is a fork of [a1ex90](https://github.com/a1ex90)'s [MusicalKeyCNN](https://github.com/a1ex90/MusicalKeyCNN) (forked at commit [`2b9266c`](https://github.com/a1ex90/MusicalKeyCNN/commit/2b9266c9bd3851cd653c3f49483b9205f969705c)), distributed under the MIT License. See [LICENSE](./LICENSE) for the original copyright notice.
+
 ---
 
 ## Table of Contents

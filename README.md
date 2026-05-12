@@ -10,6 +10,7 @@ Monorepo for audio analysis tools built around a CNN-based musical key classifie
 packages/
   key-prediction/   CNN model for musical key detection (Camelot Wheel output)
   bpm-analysis/     BPM detection using Essentia
+  react-ui/         Shared shadcn-based React component library
 apps/
   api/              FastAPI service exposing key and BPM endpoints
 ```
@@ -94,5 +95,6 @@ docker run -p 8000:8000 sonordia-api
 
 ## Packages
 
-- [`packages/key-prediction`](packages/key-prediction/README.md) — model architecture, training, evaluation, and prediction utilities
-- `packages/bpm-analysis` — Essentia-based BPM analysis
+- [`packages/key-prediction`](./packages/key-prediction) — model architecture, training, evaluation, and prediction utilities
+- [`packages/bpm-analysis`](./packages/bpm-analysis) — Essentia-based BPM analysis
+- [`packages/react-ui`](./packages/react-ui) — shared shadcn-based React component library (`@sonordia/ui`) consumed by the web and desktop apps
