@@ -44,7 +44,7 @@ function DesignTokensPage() {
           The base unit is{' '}
           <code className="text-foreground bg-muted rounded px-1 py-0.5 text-xs">--radius</code>{' '}
           (default{' '}
-          <code className="text-foreground bg-muted rounded px-1 py-0.5 text-xs">0.625rem</code>).
+          <code className="text-foreground bg-muted rounded px-1 py-0.5 text-xs">0.5rem</code>).
           Tailwind&apos;s{' '}
           <code className="text-foreground bg-muted rounded px-1 py-0.5 text-xs">rounded-*</code>{' '}
           utilities map to scaled versions via{' '}
