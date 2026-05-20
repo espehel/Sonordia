@@ -23,6 +23,8 @@
     "./dropdown-menu": "./src/components/dropdown-menu/dropdown-menu.tsx",
     "./input": "./src/components/input/input.tsx",
     "./label": "./src/components/label/label.tsx",
+    "./logo-mark": "./src/components/logo-mark/logo-mark.tsx",
+    "./logo-mark-animated": "./src/components/logo-mark/logo-mark-animated.tsx",
     "./select": "./src/components/select/select.tsx",
     "./sonner": "./src/components/sonner/sonner.tsx",
     "./table": "./src/components/table/table.tsx",

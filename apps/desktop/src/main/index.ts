@@ -31,12 +31,18 @@ protocol.registerSchemesAsPrivileged([
   },
 ]);
 
+// In dev, Electron uses its default icon — packaged builds get the icon from
+// electron-builder via build/icon.icns. Point at the source PNG so the dock,
+// Alt+Tab switcher, and window icon all show our brand mark during development.
+const devIconPath = isDev ? join(__dirname, '../../build/icon.png') : undefined;
+
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     minWidth: 800,
     minHeight: 600,
+    icon: devIconPath,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -132,6 +138,9 @@ function registerAudioProtocol(): void {
 }
 
 app.whenReady().then(() => {
+  if (devIconPath && process.platform === 'darwin') {
+    app.dock?.setIcon(devIconPath);
+  }
   initDb();
   registerAudioProtocol();
   registerIpc(bridge, backfill);

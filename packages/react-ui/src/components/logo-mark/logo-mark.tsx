@@ -1,0 +1,32 @@
+import * as React from 'react';
+
+import { cn } from '../../lib/utils';
+
+function LogoMark({
+  className,
+  title = 'Sonordia',
+  ...props
+}: React.ComponentProps<'svg'> & { title?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 512 512"
+      role="img"
+      aria-label={title}
+      data-slot="logo-mark"
+      className={cn('size-8', className)}
+      {...props}
+    >
+      <title>{title}</title>
+      <rect width="512" height="512" rx="96" fill="#0E1B00" />
+      <rect x="132" y="135" width="248" height="56" rx="28" fill="#BB95FF" />
+      <rect x="132" y="228" width="248" height="56" rx="28" fill="#AAD741" />
+      <rect x="132" y="321" width="248" height="56" rx="28" fill="#BB95FF" />
+      <circle cx="418" cy="163" r="27" fill="#AAD741" />
+      <circle cx="94" cy="256" r="27" fill="#BB95FF" />
+      <circle cx="418" cy="349" r="27" fill="#AAD741" />
+    </svg>
+  );
+}
+
+export { LogoMark };

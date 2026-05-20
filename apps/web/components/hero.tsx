@@ -2,10 +2,13 @@ import Link from 'next/link';
 import { Download, Github } from 'lucide-react';
 
 import { Button } from '@sonordia/ui/button';
+import { LogoMarkAnimated } from '@sonordia/ui/logo-mark-animated';
 
 export function Hero() {
   return (
     <section className="flex flex-col items-center gap-8 py-16 text-center lg:py-24">
+      <LogoMarkAnimated className="size-20 lg:size-24" />
+
       <div className="bg-background text-foreground/70 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs">
         <span className="bg-primary size-1.5 rounded-full" />
         Native desktop music player

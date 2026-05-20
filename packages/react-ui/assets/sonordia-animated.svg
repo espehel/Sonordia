@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Sonordia animated mark</title>
+  <desc id="desc">Animated Sonordia mark — the three record bars pulse like audio levels in a wave.</desc>
+  <rect width="512" height="512" rx="96" fill="#0E1B00"/>
+
+  <rect y="135" height="56" rx="28" fill="#BB95FF">
+    <animate attributeName="x" values="132;162;132" dur="1.6s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" keyTimes="0;0.5;1"/>
+    <animate attributeName="width" values="248;188;248" dur="1.6s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" keyTimes="0;0.5;1"/>
+  </rect>
+
+  <rect y="228" height="56" rx="28" fill="#AAD741">
+    <animate attributeName="x" values="132;170;132" dur="1.6s" begin="0.2s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" keyTimes="0;0.5;1"/>
+    <animate attributeName="width" values="248;172;248" dur="1.6s" begin="0.2s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" keyTimes="0;0.5;1"/>
+  </rect>
+
+  <rect y="321" height="56" rx="28" fill="#BB95FF">
+    <animate attributeName="x" values="132;152;132" dur="1.6s" begin="0.4s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" keyTimes="0;0.5;1"/>
+    <animate attributeName="width" values="248;208;248" dur="1.6s" begin="0.4s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" keyTimes="0;0.5;1"/>
+  </rect>
+
+  <circle cx="418" cy="163" r="27" fill="#AAD741"/>
+  <circle cx="94" cy="256" r="27" fill="#BB95FF"/>
+  <circle cx="418" cy="349" r="27" fill="#AAD741"/>
+</svg>

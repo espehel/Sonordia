@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="packages/react-ui/assets/sonordia-animated.gif" alt="Sonordia" width="160" height="160" />
+</p>
+
 # Sonordia
 
 Monorepo for audio analysis tools built around a CNN-based musical key classifier.

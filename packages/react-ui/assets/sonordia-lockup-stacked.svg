@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" role="img" aria-labelledby="title desc">
+  <title id="title">Sonordia stacked lockup</title>
+  <desc id="desc">Stacked logo lockup — Sonordia crate icon above the wordmark.</desc>
+  <g transform="translate(144 60)">
+    <rect width="512" height="512" rx="96" fill="#0E1B00"/>
+    <rect x="132" y="135" width="248" height="56" rx="28" fill="#BB95FF"/>
+    <rect x="132" y="228" width="248" height="56" rx="28" fill="#AAD741"/>
+    <rect x="132" y="321" width="248" height="56" rx="28" fill="#BB95FF"/>
+    <circle cx="418" cy="163" r="27" fill="#AAD741"/>
+    <circle cx="94" cy="256" r="27" fill="#BB95FF"/>
+    <circle cx="418" cy="349" r="27" fill="#AAD741"/>
+  </g>
+  <text x="400" y="740" font-family="Liberation Sans, Helvetica, Arial, sans-serif" font-size="120" font-weight="500" fill="#13131E" letter-spacing="-3" text-anchor="middle">Sonordia</text>
+</svg>

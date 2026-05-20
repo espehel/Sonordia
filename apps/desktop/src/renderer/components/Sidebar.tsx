@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@sonordia/ui/dropdown-menu';
 import { Input } from '@sonordia/ui/input';
+import { LogoMark } from '@sonordia/ui/logo-mark';
 import { cn } from '@sonordia/ui/utils';
 import type { Playlist } from '../types';
 
@@ -64,6 +65,11 @@ export function Sidebar({
 
   return (
     <div className="border-border flex w-56 shrink-0 flex-col gap-1 border-r p-4">
+      <div className="mb-3 flex items-center gap-2 px-3">
+        <LogoMark className="size-5" />
+        <span className="text-sm font-semibold tracking-tight">Sonordia</span>
+      </div>
+
       <button
         type="button"
         onClick={() => onSelect(null)}
