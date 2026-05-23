@@ -29,7 +29,10 @@ interface SidebarProps {
   onCreate: (name: string) => void;
   onRename: (id: string, name: string) => void;
   onDelete: (id: string) => void;
+  onDropSong: (playlistId: string, songId: string) => void;
 }
+
+const SONG_DRAG_TYPE = 'application/x-sonordia-song';
 
 export function Sidebar({
   playlists,
@@ -38,11 +41,16 @@ export function Sidebar({
   onCreate,
   onRename,
   onDelete,
+  onDropSong,
 }: SidebarProps) {
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<Playlist | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+
+  const hasSongPayload = (e: React.DragEvent) =>
+    e.dataTransfer.types.includes(SONG_DRAG_TYPE);
 
   const handleCreate = () => {
     const name = newName.trim();
@@ -89,9 +97,26 @@ export function Sidebar({
         <div
           key={pl.id}
           onClick={() => onSelect(pl.id)}
+          onDragOver={(e) => {
+            if (!hasSongPayload(e)) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+            if (dragOverId !== pl.id) setDragOverId(pl.id);
+          }}
+          onDragLeave={() => {
+            if (dragOverId === pl.id) setDragOverId(null);
+          }}
+          onDrop={(e) => {
+            const songId = e.dataTransfer.getData(SONG_DRAG_TYPE);
+            setDragOverId(null);
+            if (!songId) return;
+            e.preventDefault();
+            onDropSong(pl.id, songId);
+          }}
           className={cn(
             'group flex cursor-pointer items-center gap-1 rounded-md px-3 py-1.5 text-sm',
             selectedId === pl.id ? 'bg-muted' : 'hover:bg-muted/50',
+            dragOverId === pl.id && 'ring-primary ring-2 ring-inset',
           )}
         >
           {editingId === pl.id ? (

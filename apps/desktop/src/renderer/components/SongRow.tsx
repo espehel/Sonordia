@@ -24,8 +24,15 @@ const truncate = 'max-w-60 truncate';
 export function SongRow({ song, onAnalyze, onRemove, onPlay, isActive }: SongRowProps) {
   const stop = (e: React.MouseEvent) => e.stopPropagation();
 
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData('application/x-sonordia-song', song.id);
+    e.dataTransfer.effectAllowed = 'copy';
+  };
+
   return (
     <TableRow
+      draggable
+      onDragStart={handleDragStart}
       onClick={() => onPlay?.(song)}
       className={cn(onPlay && 'cursor-pointer', isActive && 'bg-accent/40')}
     >

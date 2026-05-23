@@ -83,6 +83,22 @@ export function usePlaylists() {
     [selectedId, refreshSongs],
   );
 
+  const addSongToPlaylist = useCallback(
+    async (playlistId: string, songId: string) => {
+      const target = playlists.find((p) => p.id === playlistId);
+      try {
+        await window.api.playlists.addSong(playlistId, songId);
+        if (selectedId === playlistId) {
+          await refreshSongs(playlistId);
+        }
+        if (target) toast.success(`Added to “${target.name}”`);
+      } catch (e) {
+        toast.error('Failed to add song', { description: errorMessage(e) });
+      }
+    },
+    [playlists, selectedId, refreshSongs],
+  );
+
   const removeSong = useCallback(
     async (songId: string) => {
       if (!selectedId) return;
@@ -110,6 +126,7 @@ export function usePlaylists() {
     renamePlaylist,
     deletePlaylist,
     addSong,
+    addSongToPlaylist,
     removeSong,
     reorder,
   };

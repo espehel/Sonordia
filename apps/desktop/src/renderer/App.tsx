@@ -27,6 +27,7 @@ function App() {
     renamePlaylist,
     deletePlaylist,
     addSong,
+    addSongToPlaylist,
     removeSong: removePlaylistSong,
     reorder,
   } = usePlaylists();
@@ -49,6 +50,7 @@ function App() {
           onCreate={createPlaylist}
           onRename={renamePlaylist}
           onDelete={deletePlaylist}
+          onDropSong={addSongToPlaylist}
         />
 
         <div className={`flex-1 overflow-auto p-6 ${showPlayer ? 'pb-[264px]' : ''}`}>
