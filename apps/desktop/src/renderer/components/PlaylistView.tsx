@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@sonordia/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@sonordia/ui/select';
@@ -28,28 +28,37 @@ export function PlaylistView({
   activeSongId,
 }: PlaylistViewProps) {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
-  const dragOverIdx = useRef<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
-  const handleDragStart = (idx: number) => {
+  const handleDragStart = (e: React.DragEvent, idx: number) => {
+    e.dataTransfer.effectAllowed = 'move';
     setDragIdx(idx);
   };
 
   const handleDragOver = (e: React.DragEvent, idx: number) => {
+    if (dragIdx === null) return;
     e.preventDefault();
-    dragOverIdx.current = idx;
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverIdx !== idx) setDragOverIdx(idx);
   };
 
   const handleDrop = () => {
-    if (dragIdx === null || dragOverIdx.current === null || dragIdx === dragOverIdx.current) {
+    if (dragIdx === null || dragOverIdx === null || dragIdx === dragOverIdx) {
       setDragIdx(null);
+      setDragOverIdx(null);
       return;
     }
     const ids = playlistSongs.map((s) => s.id);
     const [moved] = ids.splice(dragIdx, 1);
-    ids.splice(dragOverIdx.current, 0, moved);
+    ids.splice(dragOverIdx, 0, moved);
     onReorder(ids);
     setDragIdx(null);
-    dragOverIdx.current = null;
+    setDragOverIdx(null);
+  };
+
+  const handleDragEnd = () => {
+    setDragIdx(null);
+    setDragOverIdx(null);
   };
 
   const playlistSongIds = new Set(playlistSongs.map((s) => s.id));
@@ -74,18 +83,26 @@ export function PlaylistView({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {playlistSongs.map((song, idx) => (
+            {playlistSongs.map((song, idx) => {
+              const isDropTarget = dragIdx !== null && dragOverIdx === idx && dragIdx !== idx;
+              const draggingDown = dragIdx !== null && dragIdx < idx;
+              return (
               <TableRow
                 key={song.id}
                 draggable
-                onDragStart={() => handleDragStart(idx)}
+                onDragStart={(e) => handleDragStart(e, idx)}
                 onDragOver={(e) => handleDragOver(e, idx)}
                 onDrop={handleDrop}
+                onDragEnd={handleDragEnd}
                 onClick={() => onPlay?.(song)}
                 className={cn(
                   onPlay ? 'cursor-pointer' : 'cursor-grab',
                   dragIdx === idx && 'opacity-40',
                   activeSongId === song.id && 'bg-accent/40',
+                  isDropTarget &&
+                    (draggingDown
+                      ? 'shadow-[inset_0_-2px_0_0_var(--primary)]'
+                      : 'shadow-[inset_0_2px_0_0_var(--primary)]'),
                 )}
               >
                 <TableCell className="text-muted-foreground w-10 text-center">{idx + 1}</TableCell>
@@ -107,7 +124,8 @@ export function PlaylistView({
                   </Button>
                 </TableCell>
               </TableRow>
-            ))}
+              );
+            })}
           </TableBody>
         </Table>
       )}
