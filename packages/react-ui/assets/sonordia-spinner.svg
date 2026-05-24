@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Loading…">
+  <title>Sonordia — loading</title>
+  <style>
+    .el{
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: son-pulse 1.2s cubic-bezier(.42,0,.58,1) infinite;
+      will-change: transform, opacity;
+    }
+    .d1{ animation-delay: 0s;  }
+    .d2{ animation-delay: .4s; }
+    .d3{ animation-delay: .8s; }
+
+    @keyframes son-pulse{
+      0%   { transform: scale(.80); opacity: .40; }
+      16%  { transform: scale(1.06); opacity: 1; }
+      36%  { transform: scale(.80); opacity: .40; }
+      100% { transform: scale(.80); opacity: .40; }
+    }
+
+    /* Gentle, slowed motion for users who prefer reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .el{ animation-duration: 3.6s; }
+    }
+  </style>
+
+  <!-- card background -->
+  <rect width="512" height="512" rx="96" fill="#0E1B00"/>
+
+  <!-- row 1 -->
+  <rect   class="el d1" x="132" y="135" width="248" height="56" rx="28" fill="#BB95FF"/>
+  <circle class="el d1" cx="418" cy="163" r="27" fill="#AAD741"/>
+
+  <!-- row 2 -->
+  <rect   class="el d2" x="132" y="228" width="248" height="56" rx="28" fill="#AAD741"/>
+  <circle class="el d2" cx="94"  cy="256" r="27" fill="#BB95FF"/>
+
+  <!-- row 3 -->
+  <rect   class="el d3" x="132" y="321" width="248" height="56" rx="28" fill="#BB95FF"/>
+  <circle class="el d3" cx="418" cy="349" r="27" fill="#AAD741"/>
+</svg>

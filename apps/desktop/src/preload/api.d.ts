@@ -14,6 +14,7 @@ export interface Song {
   analysis_error: string | null;
   added_at: string;
   analyzed_at: string | null;
+  file_missing: boolean;
 }
 
 export interface Playlist {
@@ -94,6 +95,12 @@ export interface ElectronAPI {
     analyze: (id: string) => Promise<void>;
     analyzeAll: () => Promise<void>;
     pickFiles: () => Promise<Song[]>;
+    showInFolder: (id: string) => Promise<boolean>;
+    locate: (id: string) => Promise<Song | null>;
+    updateMetadata: (
+      id: string,
+      data: { title?: string | null; artist?: string | null },
+    ) => Promise<Song | null>;
   };
   playlists: {
     list: () => Promise<Playlist[]>;

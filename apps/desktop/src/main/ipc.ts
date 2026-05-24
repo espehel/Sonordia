@@ -1,10 +1,13 @@
-import { ipcMain, dialog, BrowserWindow } from 'electron';
+import { ipcMain, dialog, shell, BrowserWindow } from 'electron';
+import { existsSync } from 'fs';
 import {
   listSongs,
   addSongs,
   removeSong,
+  relocateSong,
   getSong,
   updateSongAnalysis,
+  updateSongMetadata,
   getPendingSongs,
   listPlaylists,
   createPlaylist,
@@ -14,6 +17,7 @@ import {
   addSongToPlaylist,
   removeSongFromPlaylist,
   reorderPlaylist,
+  Song,
 } from './db';
 import { PythonBridge } from './python-bridge';
 import { VizBackfill } from './viz-backfill';
@@ -27,12 +31,18 @@ import {
   VizFeature,
 } from './viz-cache';
 
+function withFileStatus<T extends { file_path: string }>(song: T): T & { file_missing: boolean } {
+  return { ...song, file_missing: !existsSync(song.file_path) };
+}
+
 export function registerIpc(bridge: PythonBridge, backfill: VizBackfill): void {
   // ── Songs ──
 
-  ipcMain.handle('songs:list', () => listSongs());
+  ipcMain.handle('songs:list', () => listSongs().map(withFileStatus));
 
-  ipcMain.handle('songs:add', (_event, filePaths: string[]) => addSongs(filePaths));
+  ipcMain.handle('songs:add', (_event, filePaths: string[]) =>
+    addSongs(filePaths).map(withFileStatus),
+  );
 
   ipcMain.handle('songs:remove', (_event, id: string) => {
     removeSong(id);
@@ -47,8 +57,47 @@ export function registerIpc(bridge: PythonBridge, backfill: VizBackfill): void {
       filters: [{ name: 'Audio', extensions: ['mp3', 'wav', 'flac', 'ogg'] }],
     });
     if (result.canceled) return [];
-    return addSongs(result.filePaths);
+    return addSongs(result.filePaths).map(withFileStatus);
   });
+
+  ipcMain.handle('songs:show-in-folder', (_event, id: string): boolean => {
+    const song = getSong(id);
+    if (!song || !existsSync(song.file_path)) return false;
+    shell.showItemInFolder(song.file_path);
+    return true;
+  });
+
+  ipcMain.handle('songs:locate', async (_event, id: string) => {
+    const win = BrowserWindow.getFocusedWindow();
+    if (!win) return null;
+    const song = getSong(id);
+    if (!song) return null;
+    const result = await dialog.showOpenDialog(win, {
+      title: `Locate "${song.title ?? 'song'}"`,
+      properties: ['openFile'],
+      filters: [{ name: 'Audio', extensions: ['mp3', 'wav', 'flac', 'ogg'] }],
+    });
+    if (result.canceled || result.filePaths.length === 0) return null;
+    const updated = relocateSong(id, result.filePaths[0]);
+    if (!updated) return null;
+    const wrapped = withFileStatus(updated);
+    sendToAllWindows('songs:updated', wrapped);
+    return wrapped;
+  });
+
+  ipcMain.handle(
+    'songs:update-metadata',
+    (
+      _event,
+      { id, data }: { id: string; data: { title?: string | null; artist?: string | null } },
+    ) => {
+      const updated = updateSongMetadata(id, data);
+      if (!updated) return null;
+      const wrapped = withFileStatus(updated);
+      sendToAllWindows('songs:updated', wrapped);
+      return wrapped;
+    },
+  );
 
   ipcMain.handle('songs:analyze', async (_event, id: string) => {
     await analyzeSong(id, bridge);
@@ -75,7 +124,9 @@ export function registerIpc(bridge: PythonBridge, backfill: VizBackfill): void {
     deletePlaylist(id);
   });
 
-  ipcMain.handle('playlists:songs', (_event, id: string) => getPlaylistSongs(id));
+  ipcMain.handle('playlists:songs', (_event, id: string) =>
+    getPlaylistSongs(id).map(withFileStatus),
+  );
 
   ipcMain.handle(
     'playlists:add-song',
@@ -129,7 +180,7 @@ async function analyzeSong(id: string, bridge: PythonBridge): Promise<void> {
   if (!song) return;
 
   updateSongAnalysis(id, { analysis_status: 'analyzing' });
-  sendToAllWindows('songs:updated', getSong(id));
+  pushSongUpdate(getSong(id));
 
   try {
     const result = await bridge.analyze(song.file_path);
@@ -144,7 +195,7 @@ async function analyzeSong(id: string, bridge: PythonBridge): Promise<void> {
     // Beats are already computed during analyze — cache them so the bridge
     // doesn't have to redo essentia for the beat-grid layer.
     writeVizFile(id, 'beats', { bpm: result.bpm.bpm, beats: result.beats });
-    sendToAllWindows('songs:updated', updated);
+    pushSongUpdate(updated);
 
     // Compute the remaining viz features for this song. Don't await — let it
     // run in the background; the renderer can request them on demand if needed.
@@ -158,8 +209,13 @@ async function analyzeSong(id: string, bridge: PythonBridge): Promise<void> {
       analysis_status: 'error',
       analysis_error: err instanceof Error ? err.message : String(err),
     });
-    sendToAllWindows('songs:updated', updated);
+    pushSongUpdate(updated);
   }
+}
+
+function pushSongUpdate(song: Song | undefined): void {
+  if (!song) return;
+  sendToAllWindows('songs:updated', withFileStatus(song));
 }
 
 function sendToAllWindows(channel: string, data: unknown): void {

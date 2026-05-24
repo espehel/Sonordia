@@ -27,6 +27,7 @@
     "./logo-mark-animated": "./src/components/logo-mark/logo-mark-animated.tsx",
     "./select": "./src/components/select/select.tsx",
     "./sonner": "./src/components/sonner/sonner.tsx",
+    "./spinner": "./src/components/spinner/spinner.tsx",
     "./table": "./src/components/table/table.tsx",
     "./theme": "./src/theme.ts",
     "./theme-toggle": "./src/theme-toggle.tsx",

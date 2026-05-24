@@ -1,7 +1,9 @@
+import { useCallback } from 'react';
 import { Button } from '@sonordia/ui/button';
 import { Toaster } from '@sonordia/ui/sonner';
 import { ThemeToggle } from '@sonordia/ui/theme-toggle';
 import { TooltipProvider } from '@sonordia/ui/tooltip';
+import type { Song } from './types';
 import { useSongs } from './hooks/useSongs';
 import { useAnalysis } from './hooks/useAnalysis';
 import { usePlaylists } from './hooks/usePlaylists';
@@ -16,7 +18,8 @@ import { PlaylistView } from './components/PlaylistView';
 import { PlayerPanel } from './components/PlayerPanel';
 
 function App() {
-  const { songs, loading, importFiles, removeSong } = useSongs();
+  const { songs, loading, importFiles, removeSong, showInFolder, locateSong, updateSong } =
+    useSongs();
   const { bridgeStatus, analyzeOne, analyzeAll } = useAnalysis();
   const {
     playlists,
@@ -34,6 +37,17 @@ function App() {
   const player = usePlayer();
   const { settings, toggle: toggleLayer } = useVizSettings();
   const backfill = useBackfill();
+
+  const playOrToggle = useCallback(
+    (song: Song) => {
+      if (player.song?.id === song.id) {
+        player.toggle();
+      } else {
+        player.play(song);
+      }
+    },
+    [player],
+  );
 
   const hasPending = songs.some((s) => s.analysis_status === 'pending');
   const bridgeReady = bridgeStatus.status === 'ready';
@@ -78,6 +92,8 @@ function App() {
               allSongs={songs}
               onAddSong={addSong}
               onRemoveSong={removePlaylistSong}
+              onShowInFolder={showInFolder}
+              onLocate={locateSong}
               onReorder={reorder}
               onPlay={player.play}
               activeSongId={player.song?.id ?? null}
@@ -89,7 +105,10 @@ function App() {
               songs={songs}
               onAnalyze={analyzeOne}
               onRemove={removeSong}
-              onPlay={player.play}
+              onShowInFolder={showInFolder}
+              onLocate={locateSong}
+              onUpdate={updateSong}
+              onPlayPause={playOrToggle}
               activeSongId={player.song?.id ?? null}
             />
           )}

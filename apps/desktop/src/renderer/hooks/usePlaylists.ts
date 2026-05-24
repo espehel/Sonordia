@@ -33,6 +33,15 @@ export function usePlaylists() {
     }
   }, [selectedId, refreshSongs]);
 
+  useEffect(() => {
+    const unsub = window.api.onSongUpdated((updated) => {
+      setPlaylistSongs((prev) =>
+        prev.map((s) => (s.id === updated.id ? { ...updated, position: s.position } : s)),
+      );
+    });
+    return unsub;
+  }, []);
+
   const createPlaylist = useCallback(async (name: string) => {
     try {
       const playlist = await window.api.playlists.create(name);

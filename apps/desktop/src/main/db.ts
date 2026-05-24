@@ -131,6 +131,17 @@ export function removeSong(id: string): void {
   db.prepare('DELETE FROM songs WHERE id = ?').run(id);
 }
 
+export function relocateSong(id: string, newPath: string): Song | undefined {
+  const conflict = db
+    .prepare('SELECT id FROM songs WHERE file_path = ? AND id != ?')
+    .get(newPath, id) as { id: string } | undefined;
+  if (conflict) {
+    throw new Error('Another song in your library already references this file.');
+  }
+  db.prepare('UPDATE songs SET file_path = ? WHERE id = ?').run(newPath, id);
+  return getSong(id);
+}
+
 export function updateSongAnalysis(
   id: string,
   data: {
@@ -173,6 +184,26 @@ export function updateSongAnalysis(
 
 export function getPendingSongs(): Song[] {
   return db.prepare("SELECT * FROM songs WHERE analysis_status = 'pending'").all() as Song[];
+}
+
+export function updateSongMetadata(
+  id: string,
+  data: { title?: string | null; artist?: string | null },
+): Song | undefined {
+  const fields: string[] = [];
+  const values: unknown[] = [];
+  if (Object.prototype.hasOwnProperty.call(data, 'title')) {
+    fields.push('title = ?');
+    values.push(data.title);
+  }
+  if (Object.prototype.hasOwnProperty.call(data, 'artist')) {
+    fields.push('artist = ?');
+    values.push(data.artist);
+  }
+  if (fields.length === 0) return getSong(id);
+  values.push(id);
+  db.prepare(`UPDATE songs SET ${fields.join(', ')} WHERE id = ?`).run(...values);
+  return getSong(id);
 }
 
 // ── Playlists ──

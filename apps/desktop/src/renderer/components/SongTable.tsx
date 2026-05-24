@@ -1,16 +1,34 @@
+import { useState } from 'react';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@sonordia/ui/table';
 import type { Song } from '../types';
 import { SongRow } from './SongRow';
+import { SortableHead, useSongSort, useSortedSongs } from './songSort';
 
 interface SongTableProps {
   songs: Song[];
   onAnalyze: (id: string) => void;
   onRemove: (id: string) => void;
-  onPlay?: (song: Song) => void;
+  onShowInFolder: (id: string) => void;
+  onLocate: (id: string) => void;
+  onUpdate: (id: string, data: { title?: string | null; artist?: string | null }) => void;
+  onPlayPause?: (song: Song) => void;
   activeSongId?: string | null;
 }
 
-export function SongTable({ songs, onAnalyze, onRemove, onPlay, activeSongId }: SongTableProps) {
+export function SongTable({
+  songs,
+  onAnalyze,
+  onRemove,
+  onShowInFolder,
+  onLocate,
+  onUpdate,
+  onPlayPause,
+  activeSongId,
+}: SongTableProps) {
+  const { sort, toggleSort } = useSongSort();
+  const sortedSongs = useSortedSongs(songs, sort);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
   if (songs.length === 0) {
     return (
       <div className="text-muted-foreground py-16 text-center">
@@ -23,23 +41,27 @@ export function SongTable({ songs, onAnalyze, onRemove, onPlay, activeSongId }: 
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Title</TableHead>
-          <TableHead>Artist</TableHead>
-          <TableHead className="text-center">Key</TableHead>
-          <TableHead className="text-center">BPM</TableHead>
-          <TableHead className="text-center">Status</TableHead>
+          <SortableHead label="Title" sortKey="title" sort={sort} onToggle={toggleSort} />
+          <SortableHead label="Artist" sortKey="artist" sort={sort} onToggle={toggleSort} />
+          <SortableHead label="Key" sortKey="key" sort={sort} onToggle={toggleSort} align="center" />
+          <SortableHead label="BPM" sortKey="bpm" sort={sort} onToggle={toggleSort} align="center" />
           <TableHead />
         </TableRow>
       </TableHeader>
       <TableBody>
-        {songs.map((song) => (
+        {sortedSongs.map((song) => (
           <SongRow
             key={song.id}
             song={song}
             onAnalyze={onAnalyze}
             onRemove={onRemove}
-            onPlay={onPlay}
+            onShowInFolder={onShowInFolder}
+            onLocate={onLocate}
+            onUpdate={onUpdate}
+            onPlayPause={onPlayPause}
+            onSelect={setSelectedId}
             isActive={activeSongId === song.id}
+            isSelected={selectedId === song.id}
           />
         ))}
       </TableBody>

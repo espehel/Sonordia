@@ -22,6 +22,12 @@ export function useSongs() {
   }, [refresh]);
 
   useEffect(() => {
+    const onFocus = () => refresh();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [refresh]);
+
+  useEffect(() => {
     const unsub = window.api.onSongUpdated((updated: Song) => {
       const prev = prevStatus.current.get(updated.id);
       if (prev !== 'error' && updated.analysis_status === 'error') {
@@ -55,5 +61,53 @@ export function useSongs() {
     prevStatus.current.delete(id);
   }, []);
 
-  return { songs, loading, refresh, importFiles, removeSong };
+  const showInFolder = useCallback(async (id: string) => {
+    const ok = await window.api.songs.showInFolder(id);
+    if (!ok) {
+      toast.error("Couldn't open file location", {
+        description: 'The original file may have been moved or deleted.',
+      });
+    }
+  }, []);
+
+  const updateSong = useCallback(
+    async (id: string, data: { title?: string | null; artist?: string | null }) => {
+      try {
+        const updated = await window.api.songs.updateMetadata(id, data);
+        if (updated) {
+          setSongs((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+        }
+      } catch (e) {
+        toast.error("Couldn't update song", {
+          description: e instanceof Error ? e.message : String(e),
+        });
+      }
+    },
+    [],
+  );
+
+  const locateSong = useCallback(async (id: string) => {
+    try {
+      const updated = await window.api.songs.locate(id);
+      if (updated) {
+        setSongs((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+        toast.success('File location updated');
+      }
+    } catch (e) {
+      toast.error("Couldn't update file location", {
+        description: e instanceof Error ? e.message : String(e),
+      });
+    }
+  }, []);
+
+  return {
+    songs,
+    loading,
+    refresh,
+    importFiles,
+    removeSong,
+    showInFolder,
+    locateSong,
+    updateSong,
+  };
 }

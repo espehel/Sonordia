@@ -9,6 +9,9 @@ const api: ElectronAPI = {
     analyze: (id: string) => ipcRenderer.invoke('songs:analyze', id),
     analyzeAll: () => ipcRenderer.invoke('songs:analyze-all'),
     pickFiles: () => ipcRenderer.invoke('songs:pick-files'),
+    showInFolder: (id: string) => ipcRenderer.invoke('songs:show-in-folder', id),
+    locate: (id: string) => ipcRenderer.invoke('songs:locate', id),
+    updateMetadata: (id, data) => ipcRenderer.invoke('songs:update-metadata', { id, data }),
   },
   playlists: {
     list: () => ipcRenderer.invoke('playlists:list'),
