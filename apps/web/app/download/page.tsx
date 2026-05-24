@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { cacheLife } from 'next/cache';
+import { cacheLife, cacheTag } from 'next/cache';
 import { Apple, Download, MonitorDown, Terminal } from 'lucide-react';
 
 import { SiteFooter } from '@/components/site-footer';
@@ -29,6 +29,7 @@ type Release = {
 async function getLatestRelease(): Promise<Release | null> {
   'use cache';
   cacheLife('hours');
+  cacheTag('github-release');
   try {
     const res = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`, {
       headers: { Accept: 'application/vnd.github+json' },
