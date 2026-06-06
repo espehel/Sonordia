@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Button } from '@sonordia/ui/button';
 import { Toaster } from '@sonordia/ui/sonner';
 import { ThemeToggle } from '@sonordia/ui/theme-toggle';
@@ -16,6 +16,9 @@ import { AnalysisStatus } from './components/AnalysisStatus';
 import { Sidebar } from './components/Sidebar';
 import { PlaylistView } from './components/PlaylistView';
 import { PlayerPanel } from './components/PlayerPanel';
+import { SongDetailsDrawer } from './components/SongDetailsDrawer';
+import { TagFilterDrawer } from './components/TagFilterDrawer';
+import { songMatchesFilter } from './components/tagUtils';
 
 function App() {
   const { songs, loading, importFiles, removeSong, showInFolder, locateSong, updateSong } =
@@ -37,6 +40,30 @@ function App() {
   const player = usePlayer();
   const { settings, toggle: toggleLayer } = useVizSettings();
   const backfill = useBackfill();
+  const [detailsSongId, setDetailsSongId] = useState<string | null>(null);
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
+
+  const toggleTagFilter = useCallback((tagId: string) => {
+    setSelectedTagIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(tagId)) next.delete(tagId);
+      else next.add(tagId);
+      return next;
+    });
+  }, []);
+
+  const clearTagFilter = useCallback(() => {
+    setSelectedTagIds(new Set());
+  }, []);
+
+  const filteredSongs = useMemo(
+    () => songs.filter((s) => songMatchesFilter(s, selectedTagIds)),
+    [songs, selectedTagIds],
+  );
+  const filteredPlaylistSongs = useMemo(
+    () => playlistSongs.filter((s) => songMatchesFilter(s, selectedTagIds)),
+    [playlistSongs, selectedTagIds],
+  );
 
   const playOrToggle = useCallback(
     (song: Song) => {
@@ -53,6 +80,11 @@ function App() {
   const bridgeReady = bridgeStatus.status === 'ready';
   const selectedPlaylist = playlists.find((p) => p.id === selectedId);
   const showPlayer = player.song != null;
+  const detailsSong = detailsSongId
+    ? (playlistSongs.find((s) => s.id === detailsSongId) ??
+      songs.find((s) => s.id === detailsSongId) ??
+      null)
+    : null;
 
   return (
     <TooltipProvider>
@@ -76,6 +108,14 @@ function App() {
               <AnalysisStatus status={bridgeStatus} />
             </div>
             <div className="flex items-center gap-2">
+              <TagFilterDrawer
+                songs={selectedId ? playlistSongs : songs}
+                currentPlaylistId={selectedId}
+                currentPlaylistName={selectedPlaylist?.name ?? null}
+                selectedTagIds={selectedTagIds}
+                onToggle={toggleTagFilter}
+                onClear={clearTagFilter}
+              />
               {!selectedId && hasPending && (
                 <Button onClick={analyzeAll} disabled={!bridgeReady} variant="outline" size="sm">
                   Analyze All
@@ -88,28 +128,35 @@ function App() {
 
           {selectedId ? (
             <PlaylistView
-              playlistSongs={playlistSongs}
+              playlistSongs={filteredPlaylistSongs}
               allSongs={songs}
+              playlistId={selectedId}
               onAddSong={addSong}
               onRemoveSong={removePlaylistSong}
               onShowInFolder={showInFolder}
               onLocate={locateSong}
               onReorder={reorder}
               onPlay={player.play}
+              onOpenDetails={setDetailsSongId}
               activeSongId={player.song?.id ?? null}
+              detailsSongId={detailsSongId}
+              disableReorder={selectedTagIds.size > 0}
             />
           ) : loading ? (
             <div className="text-muted-foreground py-16 text-center">Loading...</div>
           ) : (
             <SongTable
-              songs={songs}
+              songs={filteredSongs}
               onAnalyze={analyzeOne}
               onRemove={removeSong}
               onShowInFolder={showInFolder}
               onLocate={locateSong}
               onUpdate={updateSong}
               onPlayPause={playOrToggle}
+              onOpenDetails={setDetailsSongId}
               activeSongId={player.song?.id ?? null}
+              detailsSongId={detailsSongId}
+              currentPlaylistId={null}
             />
           )}
         </div>
@@ -127,6 +174,13 @@ function App() {
           onPlayPause={player.toggle}
           onSeek={player.seek}
           backfill={backfill}
+        />
+
+        <SongDetailsDrawer
+          song={detailsSong}
+          playlist={selectedPlaylist ?? null}
+          allSongs={songs}
+          onClose={() => setDetailsSongId(null)}
         />
       </div>
       <Toaster richColors position="bottom-right" />

@@ -1,5 +1,6 @@
 export type {
   Song,
+  Tag,
   Playlist,
   PlaylistSong,
   BridgeStatus,

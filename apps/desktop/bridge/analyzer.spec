@@ -10,7 +10,7 @@ hiddenimports = []
 
 # torch/librosa/essentia all use dynamic imports + bundled native libs.
 # collect_all is the safe-but-large default; trim later if size matters.
-for pkg in ("torch", "librosa", "essentia"):
+for pkg in ("torch", "librosa", "essentia", "mutagen"):
     pkg_datas, pkg_binaries, pkg_hidden = collect_all(pkg)
     datas += pkg_datas
     binaries += pkg_binaries

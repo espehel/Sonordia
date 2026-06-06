@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AlertTriangle, MoreHorizontal } from 'lucide-react';
+import { Badge } from '@sonordia/ui/badge';
 import { Button } from '@sonordia/ui/button';
 import {
   DropdownMenu,
@@ -14,6 +15,8 @@ import { TableCell, TableRow } from '@sonordia/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@sonordia/ui/tooltip';
 import { cn } from '@sonordia/ui/utils';
 import type { Song } from '../types';
+import { useDeferredClick } from '../hooks/useDeferredClick';
+import { visibleTagsFor } from './tagUtils';
 
 type EditField = 'title' | 'artist';
 
@@ -28,6 +31,7 @@ interface SongRowProps {
   onSelect?: (id: string) => void;
   isActive?: boolean;
   isSelected?: boolean;
+  currentPlaylistId?: string | null;
 }
 
 const truncate = 'max-w-60 truncate';
@@ -43,11 +47,21 @@ export function SongRow({
   onSelect,
   isActive,
   isSelected,
+  currentPlaylistId,
 }: SongRowProps) {
+  const tags = visibleTagsFor(song, currentPlaylistId ?? null);
   const [editing, setEditing] = useState<EditField | null>(null);
   const [draft, setDraft] = useState('');
   const missing = song.file_missing;
   const playable = !!onPlayPause && !missing;
+  const { deferClick, cancelClick } = useDeferredClick();
+
+  const handleRowClick = () => deferClick(() => onSelect?.(song.id));
+
+  const handleRowDoubleClick = () => {
+    cancelClick();
+    if (playable) onPlayPause?.(song);
+  };
 
   const stop = (e: React.SyntheticEvent) => e.stopPropagation();
 
@@ -62,7 +76,6 @@ export function SongRow({
 
   const startEdit = (field: EditField) => (e: React.MouseEvent) => {
     e.stopPropagation();
-    onSelect?.(song.id);
     setDraft((field === 'title' ? song.title : song.artist) ?? '');
     setEditing(field);
   };
@@ -137,8 +150,8 @@ export function SongRow({
     <TableRow
       draggable={!missing && !editing}
       onDragStart={handleDragStart}
-      onClick={() => onSelect?.(song.id)}
-      onDoubleClick={() => playable && onPlayPause?.(song)}
+      onClick={handleRowClick}
+      onDoubleClick={handleRowDoubleClick}
       className={cn(
         playable && 'cursor-pointer',
         isActive ? 'bg-accent/40' : isSelected && 'bg-accent/20',
@@ -146,7 +159,22 @@ export function SongRow({
       )}
     >
       <TableCell className={truncate}>
-        {renderEditableCell('title', song.title, missingIcon)}
+        <div className="flex flex-col gap-1">
+          {renderEditableCell('title', song.title, missingIcon)}
+          {tags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {tags.map((tag) => (
+                <Badge
+                  key={tag.id}
+                  variant={tag.playlist_id ? 'outline' : 'secondary'}
+                  className="h-4 px-1.5 text-[10px] font-normal"
+                >
+                  {tag.name}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
       </TableCell>
       <TableCell className={truncate}>{renderEditableCell('artist', song.artist)}</TableCell>
       <TableCell className="text-center">

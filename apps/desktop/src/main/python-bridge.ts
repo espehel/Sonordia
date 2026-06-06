@@ -5,10 +5,18 @@ import { existsSync, chmodSync } from 'fs';
 import { EventEmitter } from 'events';
 import { v4 as uuid } from 'uuid';
 
+export interface BridgeMetadata {
+  title: string | null;
+  artist: string | null;
+  album: string | null;
+  genre: string | null;
+}
+
 export interface AnalysisResult {
   key: { camelot: string; key_name: string; key_id: number };
   bpm: { bpm: number; confidence: number; beat_count: number };
   beats: number[];
+  metadata: BridgeMetadata;
 }
 
 export interface ComputeVizResult {
@@ -263,6 +271,12 @@ export class PythonBridge extends EventEmitter {
       key: msg.key as AnalysisResult['key'],
       bpm: msg.bpm as AnalysisResult['bpm'],
       beats: (msg.beats as number[]) ?? [],
+      metadata: (msg.metadata as BridgeMetadata) ?? {
+        title: null,
+        artist: null,
+        album: null,
+        genre: null,
+      },
     }));
   }
 

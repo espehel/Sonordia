@@ -12,6 +12,14 @@ const api: ElectronAPI = {
     showInFolder: (id: string) => ipcRenderer.invoke('songs:show-in-folder', id),
     locate: (id: string) => ipcRenderer.invoke('songs:locate', id),
     updateMetadata: (id, data) => ipcRenderer.invoke('songs:update-metadata', { id, data }),
+    updateNotes: (id, notes) => ipcRenderer.invoke('songs:update-notes', { id, notes }),
+  },
+  tags: {
+    list: (playlistId) => ipcRenderer.invoke('tags:list', playlistId),
+    attach: (songId, name, playlistId) =>
+      ipcRenderer.invoke('tags:attach', { songId, name, playlistId }),
+    detach: (songId, tagId) => ipcRenderer.invoke('tags:detach', { songId, tagId }),
+    delete: (id) => ipcRenderer.invoke('tags:delete', id),
   },
   playlists: {
     list: () => ipcRenderer.invoke('playlists:list'),

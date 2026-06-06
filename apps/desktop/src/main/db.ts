@@ -3,6 +3,13 @@ import { app } from 'electron';
 import { join } from 'path';
 import { v4 as uuid } from 'uuid';
 
+export interface Tag {
+  id: string;
+  name: string;
+  playlist_id: string | null;
+  created_at: string;
+}
+
 export interface Song {
   id: string;
   file_path: string;
@@ -19,6 +26,8 @@ export interface Song {
   analysis_error: string | null;
   added_at: string;
   analyzed_at: string | null;
+  notes: string | null;
+  tags: Tag[];
 }
 
 export interface Playlist {
@@ -74,7 +83,31 @@ export function initDb(): void {
       FOREIGN KEY (playlist_id) REFERENCES playlists(id) ON DELETE CASCADE,
       FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS tags (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      playlist_id TEXT,
+      created_at TEXT NOT NULL,
+      UNIQUE (name, playlist_id),
+      FOREIGN KEY (playlist_id) REFERENCES playlists(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS song_tags (
+      song_id TEXT NOT NULL,
+      tag_id TEXT NOT NULL,
+      PRIMARY KEY (song_id, tag_id),
+      FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE,
+      FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+    );
   `);
+
+  const hasNotes = db
+    .prepare("SELECT 1 FROM pragma_table_info('songs') WHERE name = 'notes'")
+    .get();
+  if (!hasNotes) {
+    db.exec('ALTER TABLE songs ADD COLUMN notes TEXT');
+  }
 }
 
 export function getDb(): Database.Database {
@@ -83,15 +116,46 @@ export function getDb(): Database.Database {
 
 // ── Songs ──
 
+type SongRow = Omit<Song, 'tags'>;
+
+function attachTags(rows: SongRow[]): Song[] {
+  if (rows.length === 0) return [];
+  const ids = rows.map((r) => r.id);
+  const placeholders = ids.map(() => '?').join(',');
+  const tagRows = db
+    .prepare(
+      `SELECT st.song_id AS song_id, t.id, t.name, t.playlist_id, t.created_at
+       FROM song_tags st
+       JOIN tags t ON t.id = st.tag_id
+       WHERE st.song_id IN (${placeholders})
+       ORDER BY t.created_at ASC`,
+    )
+    .all(...ids) as (Tag & { song_id: string })[];
+  const bySong = new Map<string, Tag[]>();
+  for (const row of tagRows) {
+    const { song_id, ...tag } = row;
+    if (!bySong.has(song_id)) bySong.set(song_id, []);
+    bySong.get(song_id)!.push(tag);
+  }
+  return rows.map((row) => ({ ...row, tags: bySong.get(row.id) ?? [] }));
+}
+
+function attachTagsOne(row: SongRow | undefined): Song | undefined {
+  if (!row) return undefined;
+  return attachTags([row])[0];
+}
+
 export function listSongs(): Song[] {
-  return db.prepare('SELECT * FROM songs ORDER BY added_at DESC').all() as Song[];
+  const rows = db.prepare('SELECT * FROM songs ORDER BY added_at DESC').all() as SongRow[];
+  return attachTags(rows);
 }
 
 export function getSong(id: string): Song | undefined {
-  return db.prepare('SELECT * FROM songs WHERE id = ?').get(id) as Song | undefined;
+  const row = db.prepare('SELECT * FROM songs WHERE id = ?').get(id) as SongRow | undefined;
+  return attachTagsOne(row);
 }
 
-function parseFilename(filePath: string): { title: string; artist: string | null } {
+export function parseFilename(filePath: string): { title: string; artist: string | null } {
   const basename =
     filePath
       .split('/')
@@ -111,20 +175,22 @@ export function addSongs(filePaths: string[]): Song[] {
     VALUES (?, ?, ?, ?, ?)
   `);
   const now = new Date().toISOString();
-  const songs: Song[] = [];
+  const rows: SongRow[] = [];
 
   const insertMany = db.transaction((paths: string[]) => {
     for (const filePath of paths) {
       const id = uuid();
       const { title, artist } = parseFilename(filePath);
       insert.run(id, filePath, title, artist, now);
-      const song = db.prepare('SELECT * FROM songs WHERE file_path = ?').get(filePath) as Song;
-      if (song) songs.push(song);
+      const song = db
+        .prepare('SELECT * FROM songs WHERE file_path = ?')
+        .get(filePath) as SongRow;
+      if (song) rows.push(song);
     }
   });
 
   insertMany(filePaths);
-  return songs;
+  return attachTags(rows);
 }
 
 export function removeSong(id: string): void {
@@ -183,7 +249,16 @@ export function updateSongAnalysis(
 }
 
 export function getPendingSongs(): Song[] {
-  return db.prepare("SELECT * FROM songs WHERE analysis_status = 'pending'").all() as Song[];
+  const rows = db
+    .prepare("SELECT * FROM songs WHERE analysis_status = 'pending'")
+    .all() as SongRow[];
+  return attachTags(rows);
+}
+
+export function updateSongNotes(id: string, notes: string | null): Song | undefined {
+  const trimmed = notes && notes.trim() !== '' ? notes : null;
+  db.prepare('UPDATE songs SET notes = ? WHERE id = ?').run(trimmed, id);
+  return getSong(id);
 }
 
 export function updateSongMetadata(
@@ -236,7 +311,7 @@ export function deletePlaylist(id: string): void {
 // ── Playlist Songs ──
 
 export function getPlaylistSongs(playlistId: string): PlaylistSong[] {
-  return db
+  const rows = db
     .prepare(
       `
     SELECT s.*, ps.position FROM songs s
@@ -245,7 +320,9 @@ export function getPlaylistSongs(playlistId: string): PlaylistSong[] {
     ORDER BY ps.position ASC
   `,
     )
-    .all(playlistId) as PlaylistSong[];
+    .all(playlistId) as (SongRow & { position: number })[];
+  const songs = attachTags(rows);
+  return songs.map((song, i) => ({ ...song, position: rows[i].position }));
 }
 
 export function addSongToPlaylist(playlistId: string, songId: string): void {
@@ -285,4 +362,54 @@ export function reorderPlaylist(playlistId: string, songIds: string[]): void {
 
   const now = new Date().toISOString();
   db.prepare('UPDATE playlists SET updated_at = ? WHERE id = ?').run(now, playlistId);
+}
+
+// ── Tags ──
+
+export function listTags(playlistId?: string | null): Tag[] {
+  if (playlistId === undefined) {
+    return db.prepare('SELECT * FROM tags ORDER BY created_at ASC').all() as Tag[];
+  }
+  if (playlistId === null) {
+    return db
+      .prepare('SELECT * FROM tags WHERE playlist_id IS NULL ORDER BY created_at ASC')
+      .all() as Tag[];
+  }
+  return db
+    .prepare('SELECT * FROM tags WHERE playlist_id = ? ORDER BY created_at ASC')
+    .all(playlistId) as Tag[];
+}
+
+export function findOrCreateTag(name: string, playlistId: string | null): Tag {
+  const trimmed = name.trim();
+  if (trimmed === '') throw new Error('Tag name cannot be empty');
+  const existing = db
+    .prepare(
+      playlistId === null
+        ? 'SELECT * FROM tags WHERE name = ? AND playlist_id IS NULL'
+        : 'SELECT * FROM tags WHERE name = ? AND playlist_id = ?',
+    )
+    .get(...(playlistId === null ? [trimmed] : [trimmed, playlistId])) as Tag | undefined;
+  if (existing) return existing;
+  const id = uuid();
+  const now = new Date().toISOString();
+  db.prepare(
+    'INSERT INTO tags (id, name, playlist_id, created_at) VALUES (?, ?, ?, ?)',
+  ).run(id, trimmed, playlistId, now);
+  return { id, name: trimmed, playlist_id: playlistId, created_at: now };
+}
+
+export function deleteTag(id: string): void {
+  db.prepare('DELETE FROM tags WHERE id = ?').run(id);
+}
+
+export function attachTag(songId: string, tagId: string): void {
+  db.prepare('INSERT OR IGNORE INTO song_tags (song_id, tag_id) VALUES (?, ?)').run(
+    songId,
+    tagId,
+  );
+}
+
+export function detachTag(songId: string, tagId: string): void {
+  db.prepare('DELETE FROM song_tags WHERE song_id = ? AND tag_id = ?').run(songId, tagId);
 }

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@sonordia/ui/table';
 import type { Song } from '../types';
 import { SongRow } from './SongRow';
@@ -12,7 +11,10 @@ interface SongTableProps {
   onLocate: (id: string) => void;
   onUpdate: (id: string, data: { title?: string | null; artist?: string | null }) => void;
   onPlayPause?: (song: Song) => void;
+  onOpenDetails?: (id: string) => void;
   activeSongId?: string | null;
+  detailsSongId?: string | null;
+  currentPlaylistId?: string | null;
 }
 
 export function SongTable({
@@ -23,11 +25,13 @@ export function SongTable({
   onLocate,
   onUpdate,
   onPlayPause,
+  onOpenDetails,
   activeSongId,
+  detailsSongId,
+  currentPlaylistId,
 }: SongTableProps) {
   const { sort, toggleSort } = useSongSort();
   const sortedSongs = useSortedSongs(songs, sort);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   if (songs.length === 0) {
     return (
@@ -59,9 +63,10 @@ export function SongTable({
             onLocate={onLocate}
             onUpdate={onUpdate}
             onPlayPause={onPlayPause}
-            onSelect={setSelectedId}
+            onSelect={onOpenDetails}
             isActive={activeSongId === song.id}
-            isSelected={selectedId === song.id}
+            isSelected={detailsSongId === song.id}
+            currentPlaylistId={currentPlaylistId ?? null}
           />
         ))}
       </TableBody>

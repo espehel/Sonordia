@@ -8,6 +8,7 @@ import {
   getSong,
   updateSongAnalysis,
   updateSongMetadata,
+  updateSongNotes,
   getPendingSongs,
   listPlaylists,
   createPlaylist,
@@ -17,9 +18,16 @@ import {
   addSongToPlaylist,
   removeSongFromPlaylist,
   reorderPlaylist,
+  listTags,
+  findOrCreateTag,
+  deleteTag,
+  attachTag,
+  detachTag,
+  parseFilename,
   Song,
 } from './db';
-import { PythonBridge } from './python-bridge';
+import { PythonBridge, BridgeMetadata } from './python-bridge';
+import { inferGenre } from './genre';
 import { VizBackfill } from './viz-backfill';
 import {
   ensureVizDir,
@@ -99,6 +107,17 @@ export function registerIpc(bridge: PythonBridge, backfill: VizBackfill): void {
     },
   );
 
+  ipcMain.handle(
+    'songs:update-notes',
+    (_event, { id, notes }: { id: string; notes: string | null }) => {
+      const updated = updateSongNotes(id, notes);
+      if (!updated) return null;
+      const wrapped = withFileStatus(updated);
+      sendToAllWindows('songs:updated', wrapped);
+      return wrapped;
+    },
+  );
+
   ipcMain.handle('songs:analyze', async (_event, id: string) => {
     await analyzeSong(id, bridge);
   });
@@ -149,6 +168,37 @@ export function registerIpc(bridge: PythonBridge, backfill: VizBackfill): void {
     },
   );
 
+  // ── Tags ──
+
+  ipcMain.handle('tags:list', (_event, playlistId?: string | null) => listTags(playlistId));
+
+  ipcMain.handle(
+    'tags:attach',
+    (
+      _event,
+      { songId, name, playlistId }: { songId: string; name: string; playlistId: string | null },
+    ) => {
+      const tag = findOrCreateTag(name, playlistId);
+      attachTag(songId, tag.id);
+      const updated = getSong(songId);
+      if (updated) sendToAllWindows('songs:updated', withFileStatus(updated));
+      return tag;
+    },
+  );
+
+  ipcMain.handle(
+    'tags:detach',
+    (_event, { songId, tagId }: { songId: string; tagId: string }) => {
+      detachTag(songId, tagId);
+      const updated = getSong(songId);
+      if (updated) sendToAllWindows('songs:updated', withFileStatus(updated));
+    },
+  );
+
+  ipcMain.handle('tags:delete', (_event, id: string) => {
+    deleteTag(id);
+  });
+
   // ── Visualizations ──
 
   ipcMain.handle('viz:get', (_event, songId: string) => {
@@ -184,7 +234,7 @@ async function analyzeSong(id: string, bridge: PythonBridge): Promise<void> {
 
   try {
     const result = await bridge.analyze(song.file_path);
-    const updated = updateSongAnalysis(id, {
+    updateSongAnalysis(id, {
       key_camelot: result.key.camelot,
       key_name: result.key.key_name,
       key_id: result.key.key_id,
@@ -195,7 +245,10 @@ async function analyzeSong(id: string, bridge: PythonBridge): Promise<void> {
     // Beats are already computed during analyze — cache them so the bridge
     // doesn't have to redo essentia for the beat-grid layer.
     writeVizFile(id, 'beats', { bpm: result.bpm.bpm, beats: result.beats });
-    pushSongUpdate(updated);
+
+    enrichSong(song, result.metadata, result.bpm.bpm);
+
+    pushSongUpdate(getSong(id));
 
     // Compute the remaining viz features for this song. Don't await — let it
     // run in the background; the renderer can request them on demand if needed.
@@ -210,6 +263,40 @@ async function analyzeSong(id: string, bridge: PythonBridge): Promise<void> {
       analysis_error: err instanceof Error ? err.message : String(err),
     });
     pushSongUpdate(updated);
+  }
+}
+
+// Apply ID3-derived title/artist and a genre tag after analysis.
+// Title/artist are only overwritten when the existing value is null or matches
+// what filename parsing would have produced — preserving manual edits.
+function enrichSong(song: Song, metadata: BridgeMetadata, bpm: number | null): void {
+  const parsed = parseFilename(song.file_path);
+  const updates: { title?: string | null; artist?: string | null } = {};
+
+  if (metadata.title && metadata.title !== song.title) {
+    const titleIsDefault = song.title === null || song.title === parsed.title;
+    if (titleIsDefault) updates.title = metadata.title;
+  }
+  if (metadata.artist && metadata.artist !== song.artist) {
+    const artistIsDefault = song.artist === null || song.artist === parsed.artist;
+    if (artistIsDefault) updates.artist = metadata.artist;
+  }
+  if (Object.keys(updates).length > 0) {
+    updateSongMetadata(song.id, updates);
+  }
+
+  const genre = inferGenre({
+    filePath: song.file_path,
+    bpm,
+    bridgeGenre: metadata.genre,
+  });
+  if (genre) {
+    try {
+      const tag = findOrCreateTag(genre, null);
+      attachTag(song.id, tag.id);
+    } catch (e) {
+      console.error(`[analyze] failed to attach genre tag "${genre}" to ${song.id}:`, e);
+    }
   }
 }
 

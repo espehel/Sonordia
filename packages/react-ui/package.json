@@ -20,6 +20,7 @@
     "./card": "./src/components/card/card.tsx",
     "./checkbox": "./src/components/checkbox/checkbox.tsx",
     "./dialog": "./src/components/dialog/dialog.tsx",
+    "./drawer": "./src/components/drawer/drawer.tsx",
     "./dropdown-menu": "./src/components/dropdown-menu/dropdown-menu.tsx",
     "./input": "./src/components/input/input.tsx",
     "./label": "./src/components/label/label.tsx",
@@ -41,7 +42,8 @@
     "lucide-react": "^1.14.0",
     "radix-ui": "^1.4.3",
     "sonner": "^2.0.7",
-    "tailwind-merge": "^3.0.0"
+    "tailwind-merge": "^3.0.0",
+    "vaul": "^1.1.2"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",

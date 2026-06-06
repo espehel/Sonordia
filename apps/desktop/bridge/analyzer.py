@@ -26,6 +26,12 @@ import torch
 from key_prediction import load_model, preprocess_mp3, camelot_output
 from bpm_analysis import analyze_bpm
 
+try:
+    from mutagen import File as MutagenFile
+    HAS_MUTAGEN = True
+except ImportError:
+    HAS_MUTAGEN = False
+
 
 SAMPLE_RATE = 44100
 CQT_HOP = 8820  # 5 frames/sec at 44.1kHz, matches preprocess_mp3
@@ -63,6 +69,42 @@ def write_json(path: Path, obj: dict) -> None:
         json.dump(obj, f, separators=(",", ":"))
 
 
+def read_metadata(path: Path) -> dict:
+    """Read embedded title/artist/album/genre from an audio file.
+    Always returns a dict with all four keys; missing fields are None."""
+    empty = {"title": None, "artist": None, "album": None, "genre": None}
+    if not HAS_MUTAGEN:
+        return empty
+    try:
+        audio = MutagenFile(str(path), easy=True)
+    except Exception as e:
+        print(f"[metadata] failed to open {path}: {e}", file=sys.stderr)
+        return empty
+    if audio is None or getattr(audio, "tags", None) is None:
+        return empty
+
+    def first(key: str):
+        try:
+            val = audio.tags.get(key)
+        except Exception:
+            return None
+        if not val:
+            return None
+        if isinstance(val, (list, tuple)):
+            val = val[0] if val else None
+        if val is None:
+            return None
+        s = str(val).strip()
+        return s if s else None
+
+    return {
+        "title": first("title"),
+        "artist": first("artist"),
+        "album": first("album"),
+        "genre": first("genre"),
+    }
+
+
 def handle_analyze(request_id: str, audio_path: str, model) -> None:
     path = Path(audio_path)
     if not path.exists():
@@ -76,6 +118,7 @@ def handle_analyze(request_id: str, audio_path: str, model) -> None:
     camelot_str, key_text = camelot_output(pred)
 
     bpm_result = analyze_bpm(path)
+    metadata = read_metadata(path)
 
     emit({
         "id": request_id,
@@ -91,6 +134,7 @@ def handle_analyze(request_id: str, audio_path: str, model) -> None:
             "beat_count": bpm_result["beat_count"],
         },
         "beats": bpm_result["beats"],
+        "metadata": metadata,
     })
 
 

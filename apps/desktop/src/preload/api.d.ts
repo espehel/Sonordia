@@ -1,3 +1,10 @@
+export interface Tag {
+  id: string;
+  name: string;
+  playlist_id: string | null;
+  created_at: string;
+}
+
 export interface Song {
   id: string;
   file_path: string;
@@ -14,6 +21,8 @@ export interface Song {
   analysis_error: string | null;
   added_at: string;
   analyzed_at: string | null;
+  notes: string | null;
+  tags: Tag[];
   file_missing: boolean;
 }
 
@@ -101,6 +110,13 @@ export interface ElectronAPI {
       id: string,
       data: { title?: string | null; artist?: string | null },
     ) => Promise<Song | null>;
+    updateNotes: (id: string, notes: string | null) => Promise<Song | null>;
+  };
+  tags: {
+    list: (playlistId?: string | null) => Promise<Tag[]>;
+    attach: (songId: string, name: string, playlistId: string | null) => Promise<Tag>;
+    detach: (songId: string, tagId: string) => Promise<void>;
+    delete: (id: string) => Promise<void>;
   };
   playlists: {
     list: () => Promise<Playlist[]>;
