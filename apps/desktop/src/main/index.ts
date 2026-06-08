@@ -27,6 +27,7 @@ protocol.registerSchemesAsPrivileged([
       supportFetchAPI: true,
       stream: true,
       bypassCSP: true,
+      corsEnabled: true,
     },
   },
 ]);
@@ -118,6 +119,7 @@ function registerAudioProtocol(): void {
             'Content-Range': `bytes ${start}-${end}/${total}`,
             'Accept-Ranges': 'bytes',
             'Cache-Control': 'no-cache',
+            'Access-Control-Allow-Origin': '*',
           },
         });
       }
@@ -132,6 +134,7 @@ function registerAudioProtocol(): void {
         'Content-Length': String(total),
         'Accept-Ranges': 'bytes',
         'Cache-Control': 'no-cache',
+        'Access-Control-Allow-Origin': '*',
       },
     });
   });

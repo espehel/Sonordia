@@ -24,6 +24,12 @@ import {
   attachTag,
   detachTag,
   parseFilename,
+  listBookmarks,
+  createBookmark,
+  updateBookmark,
+  deleteBookmark,
+  CreateBookmarkInput,
+  UpdateBookmarkPatch,
   Song,
 } from './db';
 import { PythonBridge, BridgeMetadata } from './python-bridge';
@@ -197,6 +203,45 @@ export function registerIpc(bridge: PythonBridge, backfill: VizBackfill): void {
 
   ipcMain.handle('tags:delete', (_event, id: string) => {
     deleteTag(id);
+  });
+
+  // ── Bookmarks ──
+
+  ipcMain.handle(
+    'bookmarks:list',
+    (_event, { playlistId, songId }: { playlistId: string; songId: string }) =>
+      listBookmarks(playlistId, songId),
+  );
+
+  ipcMain.handle('bookmarks:create', (_event, input: CreateBookmarkInput) => {
+    const bookmark = createBookmark(input);
+    sendToAllWindows('bookmarks:updated', {
+      playlistId: bookmark.playlist_id,
+      songId: bookmark.song_id,
+    });
+    return bookmark;
+  });
+
+  ipcMain.handle(
+    'bookmarks:update',
+    (_event, { id, patch }: { id: string; patch: UpdateBookmarkPatch }) => {
+      const bookmark = updateBookmark(id, patch);
+      if (!bookmark) return null;
+      sendToAllWindows('bookmarks:updated', {
+        playlistId: bookmark.playlist_id,
+        songId: bookmark.song_id,
+      });
+      return bookmark;
+    },
+  );
+
+  ipcMain.handle('bookmarks:delete', (_event, id: string) => {
+    const removed = deleteBookmark(id);
+    if (!removed) return;
+    sendToAllWindows('bookmarks:updated', {
+      playlistId: removed.playlist_id,
+      songId: removed.song_id,
+    });
   });
 
   // ── Visualizations ──

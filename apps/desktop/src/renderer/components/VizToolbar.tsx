@@ -13,6 +13,7 @@ const LAYERS: { key: VizLayer; label: string }[] = [
   { key: 'rms', label: 'RMS' },
   { key: 'chroma', label: 'Chroma' },
   { key: 'keytrack', label: 'Key' },
+  { key: 'bookmarks', label: 'Marks' },
 ];
 
 export function VizToolbar({ settings, onToggle }: Props) {

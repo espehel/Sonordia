@@ -13,4 +13,12 @@ export type {
   VizPayload,
   VizGetResult,
   BackfillProgress,
+  Bookmark,
+  BookmarkKind,
+  MarkerBookmark,
+  FadeBookmark,
+  FadeCurve,
+  CreateBookmarkInput,
+  UpdateBookmarkPatch,
+  BookmarksUpdatedEvent,
 } from '../preload/api';

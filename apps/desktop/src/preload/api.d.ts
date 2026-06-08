@@ -96,6 +96,56 @@ export interface BackfillProgress {
   error?: string;
 }
 
+export type BookmarkKind = 'marker' | 'fade';
+export type FadeCurve = 'equal_power';
+
+interface BookmarkBase {
+  id: string;
+  playlist_id: string;
+  song_id: string;
+  position_sec: number;
+  name: string | null;
+  comment: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MarkerBookmark extends BookmarkBase {
+  kind: 'marker';
+}
+
+export interface FadeBookmark extends BookmarkBase {
+  kind: 'fade';
+  level_pct: number;
+  curve: FadeCurve;
+}
+
+export type Bookmark = MarkerBookmark | FadeBookmark;
+
+export interface CreateBookmarkInput {
+  playlist_id: string;
+  song_id: string;
+  kind: BookmarkKind;
+  position_sec: number;
+  name?: string | null;
+  comment?: string | null;
+  level_pct?: number | null;
+  curve?: FadeCurve | null;
+}
+
+export interface UpdateBookmarkPatch {
+  position_sec?: number;
+  name?: string | null;
+  comment?: string | null;
+  level_pct?: number;
+  curve?: FadeCurve;
+}
+
+export interface BookmarksUpdatedEvent {
+  playlistId: string;
+  songId: string;
+}
+
 export interface ElectronAPI {
   songs: {
     list: () => Promise<Song[]>;
@@ -134,9 +184,16 @@ export interface ElectronAPI {
     getProgress: () => Promise<BackfillProgress>;
     audioUrl: (songId: string) => string;
   };
+  bookmarks: {
+    list: (playlistId: string, songId: string) => Promise<Bookmark[]>;
+    create: (input: CreateBookmarkInput) => Promise<Bookmark>;
+    update: (id: string, patch: UpdateBookmarkPatch) => Promise<Bookmark | null>;
+    delete: (id: string) => Promise<void>;
+  };
   onSongUpdated: (cb: (song: Song) => void) => () => void;
   onBridgeStatus: (cb: (status: BridgeStatus) => void) => () => void;
   onVizProgress: (cb: (progress: BackfillProgress) => void) => () => void;
+  onBookmarksUpdated: (cb: (event: BookmarksUpdatedEvent) => void) => () => void;
 }
 
 declare global {

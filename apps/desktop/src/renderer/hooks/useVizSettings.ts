@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 
-export type VizLayer = 'waveform' | 'ruler' | 'beats' | 'rms' | 'chroma' | 'keytrack';
+export type VizLayer =
+  | 'waveform'
+  | 'ruler'
+  | 'beats'
+  | 'rms'
+  | 'chroma'
+  | 'keytrack'
+  | 'bookmarks';
 
 export type VizSettings = Record<VizLayer, boolean>;
 
@@ -13,6 +20,7 @@ const defaults: VizSettings = {
   rms: true,
   chroma: true,
   keytrack: true,
+  bookmarks: true,
 };
 
 function load(): VizSettings {

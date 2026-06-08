@@ -2,7 +2,14 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { Pause, Play } from 'lucide-react';
 import { Button } from '@sonordia/ui/button';
 import { cn } from '@sonordia/ui/utils';
-import type { BackfillProgress, VizPayload, Song } from '../types';
+import type {
+  BackfillProgress,
+  Bookmark,
+  CreateBookmarkInput,
+  UpdateBookmarkPatch,
+  VizPayload,
+  Song,
+} from '../types';
 import type { VizSettings, VizLayer } from '../hooks/useVizSettings';
 import { VizToolbar } from './VizToolbar';
 import { WaveformLayer } from './viz/WaveformLayer';
@@ -11,9 +18,12 @@ import { BeatGridLayer } from './viz/BeatGridLayer';
 import { RmsLayer } from './viz/RmsLayer';
 import { ChromaLayer } from './viz/ChromaLayer';
 import { KeyTrackLayer } from './viz/KeyTrackLayer';
+import { BookmarkLayer } from './viz/BookmarkLayer';
+import { BookmarkDialog, type BookmarkDraft } from './BookmarkDialog';
 
 interface Props {
   song: Song | null;
+  playlistId: string | null;
   isPlaying: boolean;
   currentTime: number;
   duration: number;
@@ -25,9 +35,16 @@ interface Props {
   onPlayPause: () => void;
   onSeek: (sec: number) => void;
   backfill: BackfillProgress;
+  bookmarks: Bookmark[];
+  onCreateBookmark: (
+    input: Omit<CreateBookmarkInput, 'playlist_id' | 'song_id'>,
+  ) => Promise<Bookmark | null>;
+  onUpdateBookmark: (id: string, patch: UpdateBookmarkPatch) => Promise<Bookmark | null>;
+  onDeleteBookmark: (id: string) => Promise<void>;
 }
 
 const RULER_H = 22;
+const BOOKMARK_H = 22;
 const WAVEFORM_H = 80;
 const CHROMA_H = 80;
 const KEYTRACK_H = 22;
@@ -42,6 +59,7 @@ function fmt(sec: number): string {
 export function PlayerPanel(props: Props) {
   const {
     song,
+    playlistId,
     isPlaying,
     currentTime,
     duration,
@@ -53,10 +71,17 @@ export function PlayerPanel(props: Props) {
     onPlayPause,
     onSeek,
     backfill,
+    bookmarks,
+    onCreateBookmark,
+    onUpdateBookmark,
+    onDeleteBookmark,
   } = props;
 
   const stackRef = useRef<HTMLDivElement>(null);
   const [stackWidth, setStackWidth] = useState(0);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<Bookmark | null>(null);
+  const [defaultPos, setDefaultPos] = useState(0);
 
   useLayoutEffect(() => {
     const el = stackRef.current;
@@ -72,16 +97,58 @@ export function PlayerPanel(props: Props) {
   if (!song) return null;
 
   const showRuler = settings.ruler;
+  const showBookmarks = settings.bookmarks && playlistId != null;
   const showWaveformRow = settings.waveform || settings.rms;
   const showChroma = settings.chroma;
   const showKeyTrack = settings.keytrack;
   const showBeats = settings.beats;
 
+  const bookmarkTop = showRuler ? RULER_H : 0;
+  const bookmarkEnd = bookmarkTop + (showBookmarks ? BOOKMARK_H : 0);
+
   const stackHeight =
     (showRuler ? RULER_H : 0) +
+    (showBookmarks ? BOOKMARK_H : 0) +
     (showWaveformRow ? WAVEFORM_H : 0) +
     (showChroma ? CHROMA_H : 0) +
     (showKeyTrack ? KEYTRACK_H : 0);
+
+  const openCreate = (sec: number) => {
+    setEditing(null);
+    setDefaultPos(sec);
+    setDialogOpen(true);
+  };
+
+  const openEdit = (bookmark: Bookmark) => {
+    setEditing(bookmark);
+    setDialogOpen(true);
+  };
+
+  const handleSave = async (draft: BookmarkDraft) => {
+    if (editing) {
+      await onUpdateBookmark(editing.id, {
+        position_sec: draft.position_sec,
+        name: draft.name,
+        comment: draft.comment,
+        ...(editing.kind === 'fade' ? { level_pct: draft.level_pct } : {}),
+      });
+    } else {
+      await onCreateBookmark({
+        kind: draft.kind,
+        position_sec: draft.position_sec,
+        name: draft.name,
+        comment: draft.comment,
+        level_pct: draft.kind === 'fade' ? draft.level_pct : null,
+      });
+    }
+    setDialogOpen(false);
+  };
+
+  const handleDelete = async () => {
+    if (!editing) return;
+    await onDeleteBookmark(editing.id);
+    setDialogOpen(false);
+  };
 
   const progress = duration > 0 ? Math.max(0, Math.min(1, currentTime / duration)) : 0;
   const playheadX = stackWidth * progress;
@@ -145,6 +212,16 @@ export function PlayerPanel(props: Props) {
         <div ref={stackRef} style={{ position: 'relative', width: '100%', height: stackHeight }}>
           {showRuler && (
             <RulerLayer duration={duration} beats={viz.beats} width={stackWidth} height={RULER_H} />
+          )}
+          {showBookmarks && (
+            <BookmarkLayer
+              bookmarks={bookmarks}
+              duration={duration}
+              width={stackWidth}
+              height={BOOKMARK_H}
+              onBookmarkClick={openEdit}
+              onAddAtTime={openCreate}
+            />
           )}
           {showWaveformRow && (
             <div
@@ -216,17 +293,56 @@ export function PlayerPanel(props: Props) {
             />
           )}
 
-          {/* Click-to-seek overlay */}
-          <div
-            onClick={handleSeek}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              cursor: duration > 0 ? 'pointer' : 'default',
-            }}
-          />
+          {/* Click-to-seek overlay — split around the bookmark band so its clicks reach BookmarkLayer */}
+          {showBookmarks ? (
+            <>
+              {bookmarkTop > 0 && (
+                <div
+                  onClick={handleSeek}
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    height: bookmarkTop,
+                    cursor: duration > 0 ? 'pointer' : 'default',
+                  }}
+                />
+              )}
+              <div
+                onClick={handleSeek}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: bookmarkEnd,
+                  bottom: 0,
+                  cursor: duration > 0 ? 'pointer' : 'default',
+                }}
+              />
+            </>
+          ) : (
+            <div
+              onClick={handleSeek}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                cursor: duration > 0 ? 'pointer' : 'default',
+              }}
+            />
+          )}
         </div>
       )}
+
+      <BookmarkDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        bookmark={editing}
+        defaultPositionSec={defaultPos}
+        duration={duration}
+        onSave={handleSave}
+        onDelete={editing ? handleDelete : undefined}
+      />
     </div>
   );
 }

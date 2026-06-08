@@ -41,6 +41,32 @@ export interface PlaylistSong extends Song {
   position: number;
 }
 
+export type BookmarkKind = 'marker' | 'fade';
+export type FadeCurve = 'equal_power';
+
+interface BookmarkBase {
+  id: string;
+  playlist_id: string;
+  song_id: string;
+  position_sec: number;
+  name: string | null;
+  comment: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MarkerBookmark extends BookmarkBase {
+  kind: 'marker';
+}
+
+export interface FadeBookmark extends BookmarkBase {
+  kind: 'fade';
+  level_pct: number;
+  curve: FadeCurve;
+}
+
+export type Bookmark = MarkerBookmark | FadeBookmark;
+
 let db: Database.Database;
 
 export function initDb(): void {
@@ -100,6 +126,25 @@ export function initDb(): void {
       FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE,
       FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS bookmarks (
+      id TEXT PRIMARY KEY,
+      playlist_id TEXT NOT NULL,
+      song_id TEXT NOT NULL,
+      kind TEXT NOT NULL CHECK (kind IN ('marker', 'fade')),
+      position_sec REAL NOT NULL,
+      name TEXT,
+      comment TEXT,
+      level_pct REAL,
+      curve TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (playlist_id, song_id)
+        REFERENCES playlist_songs(playlist_id, song_id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS bookmarks_lookup
+      ON bookmarks(playlist_id, song_id, position_sec);
   `);
 
   const hasNotes = db
@@ -412,4 +457,142 @@ export function attachTag(songId: string, tagId: string): void {
 
 export function detachTag(songId: string, tagId: string): void {
   db.prepare('DELETE FROM song_tags WHERE song_id = ? AND tag_id = ?').run(songId, tagId);
+}
+
+// ── Bookmarks ──
+
+interface BookmarkRow {
+  id: string;
+  playlist_id: string;
+  song_id: string;
+  kind: BookmarkKind;
+  position_sec: number;
+  name: string | null;
+  comment: string | null;
+  level_pct: number | null;
+  curve: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+function rowToBookmark(row: BookmarkRow): Bookmark {
+  const base = {
+    id: row.id,
+    playlist_id: row.playlist_id,
+    song_id: row.song_id,
+    position_sec: row.position_sec,
+    name: row.name,
+    comment: row.comment,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  };
+  if (row.kind === 'fade') {
+    return {
+      ...base,
+      kind: 'fade',
+      level_pct: row.level_pct ?? 100,
+      curve: (row.curve as FadeCurve | null) ?? 'equal_power',
+    };
+  }
+  return { ...base, kind: 'marker' };
+}
+
+export function listBookmarks(playlistId: string, songId: string): Bookmark[] {
+  const rows = db
+    .prepare(
+      `SELECT * FROM bookmarks
+       WHERE playlist_id = ? AND song_id = ?
+       ORDER BY position_sec ASC`,
+    )
+    .all(playlistId, songId) as BookmarkRow[];
+  return rows.map(rowToBookmark);
+}
+
+export interface CreateBookmarkInput {
+  playlist_id: string;
+  song_id: string;
+  kind: BookmarkKind;
+  position_sec: number;
+  name?: string | null;
+  comment?: string | null;
+  level_pct?: number | null;
+  curve?: FadeCurve | null;
+}
+
+export function createBookmark(input: CreateBookmarkInput): Bookmark {
+  const id = uuid();
+  const now = new Date().toISOString();
+  const isFade = input.kind === 'fade';
+  db.prepare(
+    `INSERT INTO bookmarks
+       (id, playlist_id, song_id, kind, position_sec, name, comment, level_pct, curve, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(
+    id,
+    input.playlist_id,
+    input.song_id,
+    input.kind,
+    input.position_sec,
+    input.name ?? null,
+    input.comment ?? null,
+    isFade ? (input.level_pct ?? 100) : null,
+    isFade ? (input.curve ?? 'equal_power') : null,
+    now,
+    now,
+  );
+  const row = db.prepare('SELECT * FROM bookmarks WHERE id = ?').get(id) as BookmarkRow;
+  return rowToBookmark(row);
+}
+
+export interface UpdateBookmarkPatch {
+  position_sec?: number;
+  name?: string | null;
+  comment?: string | null;
+  level_pct?: number;
+  curve?: FadeCurve;
+}
+
+export function updateBookmark(id: string, patch: UpdateBookmarkPatch): Bookmark | undefined {
+  const existing = db.prepare('SELECT * FROM bookmarks WHERE id = ?').get(id) as
+    | BookmarkRow
+    | undefined;
+  if (!existing) return undefined;
+  const fields: string[] = [];
+  const values: unknown[] = [];
+  if (patch.position_sec !== undefined) {
+    fields.push('position_sec = ?');
+    values.push(patch.position_sec);
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, 'name')) {
+    fields.push('name = ?');
+    values.push(patch.name ?? null);
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, 'comment')) {
+    fields.push('comment = ?');
+    values.push(patch.comment ?? null);
+  }
+  if (patch.level_pct !== undefined && existing.kind === 'fade') {
+    fields.push('level_pct = ?');
+    values.push(patch.level_pct);
+  }
+  if (patch.curve !== undefined && existing.kind === 'fade') {
+    fields.push('curve = ?');
+    values.push(patch.curve);
+  }
+  if (fields.length === 0) return rowToBookmark(existing);
+  fields.push('updated_at = ?');
+  values.push(new Date().toISOString());
+  values.push(id);
+  db.prepare(`UPDATE bookmarks SET ${fields.join(', ')} WHERE id = ?`).run(...values);
+  const row = db.prepare('SELECT * FROM bookmarks WHERE id = ?').get(id) as BookmarkRow;
+  return rowToBookmark(row);
+}
+
+export function deleteBookmark(id: string): { playlist_id: string; song_id: string } | undefined {
+  const row = db
+    .prepare('SELECT playlist_id, song_id FROM bookmarks WHERE id = ?')
+    .get(id) as { playlist_id: string; song_id: string } | undefined;
+  if (!row) return undefined;
+  db.prepare('DELETE FROM bookmarks WHERE id = ?').run(id);
+  return row;
 }

@@ -1,5 +1,11 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
-import type { Song, BridgeStatus, BackfillProgress, ElectronAPI } from './api';
+import type {
+  Song,
+  BridgeStatus,
+  BackfillProgress,
+  BookmarksUpdatedEvent,
+  ElectronAPI,
+} from './api';
 
 const api: ElectronAPI = {
   songs: {
@@ -40,6 +46,13 @@ const api: ElectronAPI = {
     getProgress: () => ipcRenderer.invoke('viz:progress'),
     audioUrl: (songId: string) => `audio://${encodeURIComponent(songId)}`,
   },
+  bookmarks: {
+    list: (playlistId, songId) =>
+      ipcRenderer.invoke('bookmarks:list', { playlistId, songId }),
+    create: (input) => ipcRenderer.invoke('bookmarks:create', input),
+    update: (id, patch) => ipcRenderer.invoke('bookmarks:update', { id, patch }),
+    delete: (id) => ipcRenderer.invoke('bookmarks:delete', id),
+  },
   onSongUpdated: (cb: (song: Song) => void) => {
     const listener = (_event: IpcRendererEvent, song: Song) => cb(song);
     ipcRenderer.on('songs:updated', listener);
@@ -54,6 +67,11 @@ const api: ElectronAPI = {
     const listener = (_event: IpcRendererEvent, progress: BackfillProgress) => cb(progress);
     ipcRenderer.on('viz:progress', listener);
     return () => ipcRenderer.removeListener('viz:progress', listener);
+  },
+  onBookmarksUpdated: (cb: (event: BookmarksUpdatedEvent) => void) => {
+    const listener = (_event: IpcRendererEvent, payload: BookmarksUpdatedEvent) => cb(payload);
+    ipcRenderer.on('bookmarks:updated', listener);
+    return () => ipcRenderer.removeListener('bookmarks:updated', listener);
   },
 };
 

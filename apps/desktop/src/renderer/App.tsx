@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '@sonordia/ui/button';
 import { Toaster } from '@sonordia/ui/sonner';
 import { ThemeToggle } from '@sonordia/ui/theme-toggle';
@@ -10,6 +10,7 @@ import { usePlaylists } from './hooks/usePlaylists';
 import { usePlayer } from './hooks/usePlayer';
 import { useVizSettings } from './hooks/useVizSettings';
 import { useBackfill } from './hooks/useBackfill';
+import { useBookmarks } from './hooks/useBookmarks';
 import { ImportButton } from './components/ImportButton';
 import { SongTable } from './components/SongTable';
 import { AnalysisStatus } from './components/AnalysisStatus';
@@ -38,8 +39,13 @@ function App() {
     reorder,
   } = usePlaylists();
   const player = usePlayer();
+  const playerBookmarks = useBookmarks(player.playlistId, player.song?.id ?? null);
   const { settings, toggle: toggleLayer } = useVizSettings();
   const backfill = useBackfill();
+
+  useEffect(() => {
+    player.setFades(playerBookmarks.fades);
+  }, [playerBookmarks.fades, player.setFades]);
   const [detailsSongId, setDetailsSongId] = useState<string | null>(null);
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
 
@@ -136,7 +142,7 @@ function App() {
               onShowInFolder={showInFolder}
               onLocate={locateSong}
               onReorder={reorder}
-              onPlay={player.play}
+              onPlay={(song) => player.play(song, selectedId)}
               onOpenDetails={setDetailsSongId}
               activeSongId={player.song?.id ?? null}
               detailsSongId={detailsSongId}
@@ -163,6 +169,7 @@ function App() {
 
         <PlayerPanel
           song={player.song}
+          playlistId={player.playlistId}
           isPlaying={player.isPlaying}
           currentTime={player.currentTime}
           duration={player.duration}
@@ -174,6 +181,10 @@ function App() {
           onPlayPause={player.toggle}
           onSeek={player.seek}
           backfill={backfill}
+          bookmarks={playerBookmarks.bookmarks}
+          onCreateBookmark={playerBookmarks.create}
+          onUpdateBookmark={playerBookmarks.update}
+          onDeleteBookmark={playerBookmarks.remove}
         />
 
         <SongDetailsDrawer
